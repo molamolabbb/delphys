@@ -1,0 +1,13 @@
+<bin name="doubleHiggsAnalyser" file="doubleHiggsAnalyser.cc">
+  <use name="root"/>
+  <lib name="TMVA"/>
+  <use name="rootxml"/>
+  <lib name="Eve"/>
+  <lib name="EG"/>
+  <use name="delphys/analysis"/>
+  <use name="delphys/oxbridgekinetics"/>
+  <flags CXXFLAGS="-I/home/sunyoung/delPhys/src/delphys/external/Delphes-3.4.1/"/>
+  <flags LDFLAGS="-L/home/sunyoung/delPhys/src/delphys/external/Delphes-3.4.1/"/>
+  <flags LDFLAGS="-lDelphes"/>
+  <flags LDFLAGS="-lMinuit"/>
+</bin>
