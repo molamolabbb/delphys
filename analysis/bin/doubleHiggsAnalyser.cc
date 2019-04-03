@@ -414,13 +414,13 @@ int main(Int_t argc,Char_t** argv)
   //f->GetObject("Delphes", tree);
   TChain *tree = new TChain("Delphes");
   TString output_name;
-  TString weight_file_path = "/cms/ldap_home/sunyoung/delPhys/src/delphys/analysis/bin/dataset_HH_SM/weights/DoubleHiggs_BDTG.weights.xml";
-  //tree->Add("/xrootd/store/user/jlee/GluGluToHHTo2B2VTo2L2Nu_node_6_13TeV-madgraph-v2/delphes/*.root"); // ui
-  //tree->Add("/xrootd/store/user/jlee/GluGluToHHTo2B2VTo2L2Nu_node_6_13TeV-madgraph-v2/delphes/*.root"); // B6 higgs
-  //tree->Add("/xrootd/store/user/jlee/GluGluToHHTo2B2VTo2L2Nu_node_11_13TeV-madgraph-v2/delphes/*.root"); // B11 higgs
-  //tree->Add("/xrootd/store/user/jlee/GluGluToHHTo2B2VTo2L2Nu_node_sm_13TeV-madgraph-v2/delphes/*.root"); // SM higgs
+  TString weight_file_path = "/home/sunyoung/delPhys/src/delphys/analysis/bin/weights/DoubleHiggs_BDTG.weights.xml";
+  //tree->Add("/xrootd_UOS/store/user/jlee/GluGluToHHTo2B2VTo2L2Nu_node_6_13TeV-madgraph-v2/delphes/*.root"); // ui
+  //tree->Add("/xrootd_UOS/store/user/jlee/GluGluToHHTo2B2VTo2L2Nu_node_6_13TeV-madgraph-v2/delphes/*.root"); // B6 higgs
+  //tree->Add("/xrootd_UOS/store/user/jlee/GluGluToHHTo2B2VTo2L2Nu_node_11_13TeV-madgraph-v2/delphes/*.root"); // B11 higgs
+  //tree->Add("/xrootd_UOS/store/user/jlee/GluGluToHHTo2B2VTo2L2Nu_node_sm_13TeV-madgraph-v2/delphes/*.root"); // SM higgs
   for (int i = 1; i<200; i++){
-  std::string filename = "/xrootd/store/user/seyang/Data/TopTagging/TT/TT_"+std::to_string(i)+".root";
+  std::string filename = "/xrootd_UOS/store/user/sunyoung/delphes/TT_"+std::to_string(i)+".root";
   tree->Add(filename.c_str());
   }
   //output_name = "HH_B6.root";
