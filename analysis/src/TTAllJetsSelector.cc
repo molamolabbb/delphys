@@ -146,7 +146,7 @@ void TTAllJetsSelector::analyse() {
   out_tree_->Fill();
 }
 
-void TTAllJetsSelector::Loop() {
+void TTAllJetsSelector::loop() {
   const Int_t kNumEntries = in_tree_->GetEntries();
   const Int_t kPrintFreq = kNumEntries / 100;
   const TString kMsgFmt = "[%d/%d (%.2f %)] # of passed events: %d (%.2f %)";

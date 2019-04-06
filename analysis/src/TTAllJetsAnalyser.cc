@@ -409,7 +409,7 @@ void TTAllJetsAnalyser::analyse() {
 
 
 
-void TTAllJetsAnalyser::Loop() {
+void TTAllJetsAnalyser::loop() {
   const Int_t kNumTotal = in_tree_->GetEntries();
   const Int_t kPrintFreq = kNumTotal / 20;
   TString msg_fmt = TString::Format("[%s/%d (%s %%)]", "%d", kNumTotal, "%.2f");

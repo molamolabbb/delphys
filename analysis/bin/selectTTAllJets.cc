@@ -5,7 +5,7 @@ int main(int argc, char* argv[]) {
   TString out_path(argv[2]);
 
   TTAllJetsSelector analyser(in_path, out_path);
-  analyser.Loop();
+  analyser.loop();
 
   return 0;
 }

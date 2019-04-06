@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
   } 
 
   TTAllJetsAnalyser analyser(in_path, out_path, label);
-  analyser.Loop();
+  analyser.loop();
 
   return 0;
 }

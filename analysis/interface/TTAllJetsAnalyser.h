@@ -51,7 +51,7 @@ class TTAllJetsAnalyser : private BaseAnalyser {
                     Int_t label);
 
   ~TTAllJetsAnalyser();
-  void Loop();
+  void loop();
 
  private:
   // inherited
