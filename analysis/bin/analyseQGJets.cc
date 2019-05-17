@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
 
 
   QGJetsAnalyser analyser(in_path, out_path, "jetAnalyser", is_dijet, label);
-  analyser.Loop();
+  analyser.loop();
  
   return 0;
 }

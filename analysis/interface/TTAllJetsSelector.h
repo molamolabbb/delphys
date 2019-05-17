@@ -29,7 +29,7 @@ class TTAllJetsSelector : private BaseAnalyser {
   TTAllJetsSelector(const TString & in_path,
                     const TString & out_path);
   ~TTAllJetsSelector();
-  void Loop();
+  void loop();
 
  private:
   Bool_t selectEvent();
