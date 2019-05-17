@@ -62,13 +62,51 @@ void TTAllJetsAnalyser::makeBranch() {
 
   // jet unordered set
   BRANCH_I(num_eflow);
+  BRANCH_I(num_track);
+  BRANCH_I(num_tower);
 
-  BRANCH_VF(eflow_pt);
-  BRANCH_VF(eflow_eta);
-  BRANCH_VF(eflow_phi);
-  BRANCH_VI(eflow_charge);
-  BRANCH_VI(eflow_pid);
-  BRANCH_VI(eflow_type)
+  // NOTE track
+  BRANCH_VF(track_pt);
+  BRANCH_VF(track_eta);
+  BRANCH_VF(track_phi);
+  BRANCH_VF(track_ctg_theta);
+
+  BRANCH_VI(track_charge);
+  BRANCH_VI(track_pid);
+  BRANCH_VI(track_type);
+
+  BRANCH_VF(track_eta_outer);
+  BRANCH_VF(track_phi_outer);
+  BRANCH_VF(track_t);
+  BRANCH_VF(track_x)
+  BRANCH_VF(track_y);
+  BRANCH_VF(track_z);
+  BRANCH_VF(track_t_outer);
+  BRANCH_VF(track_x_outer)
+  BRANCH_VF(track_y_outer);
+  BRANCH_VF(track_z_outer);
+  BRANCH_VF(track_xd);
+  BRANCH_VF(track_yd);
+  BRANCH_VF(track_zd);
+  BRANCH_VF(track_l);
+  BRANCH_VF(track_dz);
+  BRANCH_VF(track_d0);
+  BRANCH_VF(track_error_p);
+  BRANCH_VF(track_error_pt);
+  BRANCH_VF(track_error_phi);
+  BRANCH_VF(track_error_ctg_theta);
+  BRANCH_VF(track_error_t);
+  BRANCH_VF(track_error_d0);
+  BRANCH_VF(track_error_dz);
+
+  BRANCH_VF(tower_pt);
+  BRANCH_VF(tower_eta);
+  BRANCH_VF(tower_phi);
+  BRANCH_VI(tower_charge);
+  BRANCH_VI(tower_pid);
+  BRANCH_VI(tower_type);
+
+
 
   BRANCH_F(met);
   BRANCH_F(met_eta);
@@ -115,12 +153,46 @@ void TTAllJetsAnalyser::resetBranch() {
   // CAUTION do not reset label
 
   b_num_eflow_ = -1;
-  b_eflow_pt_.clear();
-  b_eflow_eta_.clear();
-  b_eflow_phi_.clear();
-  b_eflow_charge_.clear();
-  b_eflow_pid_.clear();
-  b_eflow_type_.clear();
+  b_num_track_ = -1;
+  b_num_tower_ = -1;
+
+  b_track_pt_.clear();
+  b_track_eta_.clear();
+  b_track_phi_.clear();
+  b_track_ctg_theta_.clear();
+  b_track_charge_.clear();
+  b_track_pid_.clear();
+  b_track_type_.clear();
+  b_track_eta_outer_.clear();
+  b_track_phi_outer_.clear();
+  b_track_t_.clear();
+  b_track_x_.clear();
+  b_track_y_.clear();
+  b_track_z_.clear();
+  b_track_t_outer_.clear();
+  b_track_x_outer_.clear();
+  b_track_y_outer_.clear();
+  b_track_z_outer_.clear();
+  b_track_xd_.clear();
+  b_track_yd_.clear();
+  b_track_zd_.clear();
+  b_track_l_.clear();
+  b_track_dz_.clear();
+  b_track_d0_.clear();
+  b_track_error_p_.clear();
+  b_track_error_pt_.clear();
+  b_track_error_phi_.clear();
+  b_track_error_ctg_theta_.clear();
+  b_track_error_t_.clear();
+  b_track_error_d0_.clear();
+  b_track_error_dz_.clear();
+
+  b_tower_pt_.clear();
+  b_tower_eta_.clear();
+  b_tower_phi_.clear();
+  b_tower_charge_.clear();
+  b_tower_pid_.clear();
+  b_tower_type_.clear();
 
   b_met_ = -1.0f;
   b_met_eta_ = 100.0f;
@@ -216,53 +288,79 @@ Int_t TTAllJetsAnalyser::getPFIndex(Int_t pid, Int_t charge) {
   else                                  return pfindex::kNegativelyChargedHadron;
 }
 
-void TTAllJetsAnalyser::fillEFlow() {
-  Int_t num_tracks = eflow_tracks_->GetEntries();
-  Int_t num_nhads = eflow_neutral_hadrons_->GetEntries();
-  Int_t num_photons = eflow_photons_->GetEntries();
+void TTAllJetsAnalyser::analyseEFlow() {
+  b_num_track_ = eflow_tracks_->GetEntries();
 
-  b_num_eflow_ = num_tracks + num_nhads + num_photons;
+  Int_t num_nhad = eflow_neutral_hadrons_->GetEntries();
+  Int_t num_photon = eflow_photons_->GetEntries();
+  b_num_tower_ = num_nhad + num_photon;
+
+  b_num_eflow_ = b_num_track_ + b_num_tower_;
 
   // for (Int_t idx = 0; idx < eflow_tracks_->GetEntries(); idx++) {
-  for (Int_t idx = 0; idx < num_tracks; idx++) {
+  for (Int_t idx = 0; idx < b_num_track_; idx++) {
     auto track = dynamic_cast<Track*>(eflow_tracks_->At(idx));
     Int_t pid = track->PID;
     Int_t charge = track->Charge;
     Int_t pf_index = getPFIndex(pid, charge);
 
-    b_eflow_pt_.push_back(track->PT);
-    b_eflow_eta_.push_back(track->Eta);
-    b_eflow_phi_.push_back(track->Phi);
-    b_eflow_charge_.push_back(track->Charge);
-    b_eflow_pid_.push_back(pid);
-    b_eflow_type_.push_back(pf_index);
+    b_track_pt_.push_back(track->PT);
+    b_track_eta_.push_back(track->Eta);
+    b_track_phi_.push_back(track->Phi);
+    b_track_charge_.push_back(track->Charge);
+    b_track_pid_.push_back(pid);
+    b_track_type_.push_back(pf_index);
+
+    b_track_eta_outer_.push_back(track->CtgTheta);
+    b_track_eta_outer_.push_back(track->EtaOuter);
+    b_track_phi_outer_.push_back(track->PhiOuter);
+    b_track_t_.push_back(track->T);
+    b_track_x_.push_back(track->X);
+    b_track_y_.push_back(track->Y);
+    b_track_z_.push_back(track->Z);
+    b_track_t_outer_.push_back(track->TOuter);
+    b_track_x_outer_.push_back(track->XOuter);
+    b_track_y_outer_.push_back(track->YOuter);
+    b_track_z_outer_.push_back(track->ZOuter);
+    b_track_xd_.push_back(track->Xd);
+    b_track_yd_.push_back(track->Yd);
+    b_track_zd_.push_back(track->Zd);
+    b_track_l_.push_back(track->L);
+    b_track_d0_.push_back(track->D0);
+    b_track_dz_.push_back(track->DZ);
+    b_track_error_p_.push_back(track->ErrorP);
+    b_track_error_pt_.push_back(track->ErrorPT);
+    b_track_error_phi_.push_back(track->ErrorPhi);
+    b_track_error_ctg_theta_.push_back(track->ErrorCtgTheta);
+    b_track_error_t_.push_back(track->ErrorT);
+    b_track_error_d0_.push_back(track->ErrorD0);
+    b_track_error_dz_.push_back(track->ErrorDZ);
+
   }
 
   // for (Int_t idx = 0; idx < eflow_neutral_hadrons_->GetEntries(); idx++) {
-  for (Int_t idx = 0; idx < num_nhads; idx++) {
+  for (Int_t idx = 0; idx < num_nhad; idx++) {
     auto nhad = dynamic_cast<Tower*>(eflow_neutral_hadrons_->At(idx));
-    b_eflow_pt_.push_back(nhad->ET);
-    b_eflow_eta_.push_back(nhad->Eta);
-    b_eflow_phi_.push_back(nhad->Phi);
-    b_eflow_charge_.push_back(0);
-    b_eflow_pid_.push_back(pdgid::kNeutralHadron);
-    b_eflow_type_.push_back(pfindex::kNeutralHadron);
+    b_tower_pt_.push_back(nhad->ET);
+    b_tower_eta_.push_back(nhad->Eta);
+    b_tower_phi_.push_back(nhad->Phi);
+    b_tower_charge_.push_back(0);
+    b_tower_pid_.push_back(pdgid::kNeutralHadron);
+    b_tower_type_.push_back(pfindex::kNeutralHadron);
   }
 
   // for (Int_t idx = 0; idx < eflow_photons_->GetEntries(); idx++) {
-  for (Int_t idx = 0; idx < num_photons; idx++) {
+  for (Int_t idx = 0; idx < num_photon; idx++) {
     auto photon = dynamic_cast<Tower*>(eflow_photons_->At(idx));
-    b_eflow_pt_.push_back(photon->ET);
-    b_eflow_eta_.push_back(photon->Eta);
-    b_eflow_phi_.push_back(photon->Phi);
-    b_eflow_charge_.push_back(0);
-    b_eflow_pid_.push_back(pdgid::kPhoton);
-    b_eflow_type_.push_back(pfindex::kPhoton);
+    b_tower_pt_.push_back(photon->ET);
+    b_tower_eta_.push_back(photon->Eta);
+    b_tower_phi_.push_back(photon->Phi);
+    b_tower_charge_.push_back(0);
+    b_tower_pid_.push_back(pdgid::kPhoton);
+    b_tower_type_.push_back(pfindex::kPhoton);
   }
 
 }
-
-
 
 Bool_t TTAllJetsAnalyser::trackBottomQuark(const GenParticle* p) {
   Bool_t found_b = false;
@@ -294,7 +392,8 @@ Float_t TTAllJetsAnalyser::getBDaughterRatio(const Jet* jet) {
 
 
 
-void TTAllJetsAnalyser::fillJetVariables() {
+void TTAllJetsAnalyser::analyseJet() {
+
   std::vector<GenParticle*> bottom_quarks;
   for (Int_t p_idx = 0; p_idx < particles_->GetEntries(); p_idx++) {
     auto p = dynamic_cast<GenParticle*>(particles_->At(p_idx));
@@ -303,8 +402,8 @@ void TTAllJetsAnalyser::fillJetVariables() {
     }
   }
 
-  // FIXME make fillJetVaariable to return boolean
-  // if (bottom_quarks.size() != 2) return false
+
+
 
   Int_t jet_count = 0;
   for (const auto & jet : selected_jets_) {
@@ -440,6 +539,10 @@ void TTAllJetsAnalyser::fillJetVariables() {
     Float_t b_dau_ratio = getBDaughterRatio(jet);
     b_jet_b_tracking_.push_back(b_dau_ratio);
 
+    ////////////////////////////////////////////////////////////////////////////
+    // NOTE
+    ////////////////////////////////////////////////////////////////////////////
+
   } // end loop over jets
 }
 
@@ -447,8 +550,8 @@ void TTAllJetsAnalyser::fillJetVariables() {
 
 void TTAllJetsAnalyser::analyse() {
 
-  fillEFlow();
-  fillJetVariables();
+  analyseEFlow();
+  analyseJet();
 
   auto missing_et = dynamic_cast<MissingET*>(mets_->At(0));
   b_met_ = missing_et->MET;
