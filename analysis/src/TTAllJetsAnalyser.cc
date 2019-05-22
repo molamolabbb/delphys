@@ -13,16 +13,20 @@ using namespace delphys;
 
 TTAllJetsAnalyser::TTAllJetsAnalyser(const TString & in_path,
                                      const TString & out_path,
-                                     Int_t label)
-    : BaseAnalyser(in_path, out_path, "delphys"),
-      b_label_(label) {
+                                     Int_t label) :
+    BaseAnalyser(in_path, out_path, "delphys"),
+    b_label_(label) {
+
   std::cout << "ctor begin" << std::endl;
 
-  std::cout << "SetBranchAddress begin" << std::endl;
+  std::cout << "setBranchAddress begin" << std::endl;
   setBranchAddress({"Vertex"}, /*drop=*/true);
-  std::cout << "SetBranchAddress end" << std::endl;
+  std::cout << "setBranchAddress end" << std::endl;
 
   makeBranch();
+
+  // Initialise member data
+  num_ambiguous_ = 0;
 
   std::cout << "ctor end" << std::endl;
 }
@@ -33,6 +37,12 @@ TTAllJetsAnalyser::~TTAllJetsAnalyser() {
   out_tree_->Print();
   out_file_->Write();
   out_file_->Close();
+
+
+  std::cout << "# of events having ambiguous jet-parton assignment: "
+            << num_ambiguous_
+            << std::endl;
+
   std::cout << "dtor end" << std::endl;
 }
 
@@ -69,36 +79,15 @@ void TTAllJetsAnalyser::makeBranch() {
   BRANCH_VF(track_pt);
   BRANCH_VF(track_eta);
   BRANCH_VF(track_phi);
-  BRANCH_VF(track_ctg_theta);
 
   BRANCH_VI(track_charge);
   BRANCH_VI(track_pid);
   BRANCH_VI(track_type);
 
-  BRANCH_VF(track_eta_outer);
-  BRANCH_VF(track_phi_outer);
-  BRANCH_VF(track_t);
-  BRANCH_VF(track_x)
-  BRANCH_VF(track_y);
-  BRANCH_VF(track_z);
-  BRANCH_VF(track_t_outer);
-  BRANCH_VF(track_x_outer)
-  BRANCH_VF(track_y_outer);
-  BRANCH_VF(track_z_outer);
-  BRANCH_VF(track_xd);
-  BRANCH_VF(track_yd);
-  BRANCH_VF(track_zd);
-  BRANCH_VF(track_l);
   BRANCH_VF(track_dz);
   BRANCH_VF(track_d0);
-  BRANCH_VF(track_error_p);
-  BRANCH_VF(track_error_pt);
-  BRANCH_VF(track_error_phi);
-  BRANCH_VF(track_error_ctg_theta);
-  BRANCH_VF(track_error_t);
-  BRANCH_VF(track_error_d0);
-  BRANCH_VF(track_error_dz);
 
+  // NOTE tower
   BRANCH_VF(tower_pt);
   BRANCH_VF(tower_eta);
   BRANCH_VF(tower_phi);
@@ -106,12 +95,12 @@ void TTAllJetsAnalyser::makeBranch() {
   BRANCH_VI(tower_pid);
   BRANCH_VI(tower_type);
 
-
-
+  // NOTE MEET
   BRANCH_F(met);
   BRANCH_F(met_eta);
   BRANCH_F(met_phi);
 
+  // NOTE Jet
   // jet variables
   BRANCH_I(num_b_jets);
   BRANCH_I(num_b_jets_6);
@@ -131,12 +120,10 @@ void TTAllJetsAnalyser::makeBranch() {
   BRANCH_VF(jet_ptd);
 
   BRANCH_VO(jet_b_tag);
-  BRANCH_VO(jet_b_tag_algo);
-  BRANCH_VO(jet_b_tag_phys);
-  BRANCH_VO(jet_b_dr_matching);
-  BRANCH_VO(jet_b_tracking);
 
-  // BRANCH_ANY(num_con);
+  BRANCH_VI(jet_ttbar_assignment);
+  BRANCH_VI(jet_b_assignment);
+
   BRANCH_ANY(con_pt);
   BRANCH_ANY(con_deta);
   BRANCH_ANY(con_dphi);
@@ -159,33 +146,11 @@ void TTAllJetsAnalyser::resetBranch() {
   b_track_pt_.clear();
   b_track_eta_.clear();
   b_track_phi_.clear();
-  b_track_ctg_theta_.clear();
   b_track_charge_.clear();
   b_track_pid_.clear();
   b_track_type_.clear();
-  b_track_eta_outer_.clear();
-  b_track_phi_outer_.clear();
-  b_track_t_.clear();
-  b_track_x_.clear();
-  b_track_y_.clear();
-  b_track_z_.clear();
-  b_track_t_outer_.clear();
-  b_track_x_outer_.clear();
-  b_track_y_outer_.clear();
-  b_track_z_outer_.clear();
-  b_track_xd_.clear();
-  b_track_yd_.clear();
-  b_track_zd_.clear();
-  b_track_l_.clear();
   b_track_dz_.clear();
   b_track_d0_.clear();
-  b_track_error_p_.clear();
-  b_track_error_pt_.clear();
-  b_track_error_phi_.clear();
-  b_track_error_ctg_theta_.clear();
-  b_track_error_t_.clear();
-  b_track_error_d0_.clear();
-  b_track_error_dz_.clear();
 
   b_tower_pt_.clear();
   b_tower_eta_.clear();
@@ -217,11 +182,9 @@ void TTAllJetsAnalyser::resetBranch() {
   b_jet_ptd_.clear();
 
   b_jet_b_tag_.clear();
-  b_jet_b_tag_algo_.clear();
-  b_jet_b_tag_phys_.clear();
 
-  b_jet_b_dr_matching_.clear();
-  b_jet_b_tracking_.clear();
+  b_jet_ttbar_assignment_.clear();
+  b_jet_b_assignment_.clear();
 
   b_con_pt_.clear();
   b_con_deta_.clear();
@@ -232,35 +195,166 @@ void TTAllJetsAnalyser::resetBranch() {
 }
 
 
-Bool_t TTAllJetsAnalyser::selectEvent() {
-  // FIXME move clear to reset method. rename resetBranch to reset..?
-  selected_jets_.clear();
+std::vector<const GenParticle*> TTAllJetsAnalyser::getDaughters(
+    const GenParticle* mother) {
 
+  std::vector<const GenParticle*> daughters;
+  if (mother->D1 == -1) {
+    return daughters;
+  }
+
+  for (Int_t dau_idx = mother->D1; dau_idx <= mother->D2; dau_idx++) {
+    auto dau = dynamic_cast<const GenParticle*>(particles_->At(dau_idx));
+    daughters.push_back(dau);
+  }
+
+  return daughters;
+}
+
+
+std::vector<const GenParticle*> TTAllJetsAnalyser::getPartons(
+    const GenParticle* top) {
+
+  auto candidates = getDaughters(top);
+
+  std::vector<const GenParticle*> partons;
+
+  while (candidates.size() > 0) {
+    auto cand = candidates.back();
+    candidates.pop_back();
+
+    if ((std::abs(cand->PID) <= 5) and (cand->Status == 23)) {
+      partons.push_back(cand);
+    } else if (cand->D1 != -1) {
+      auto new_cands = getDaughters(cand);
+      candidates.insert(candidates.end(), new_cands.begin(), new_cands.end());
+    }
+  }
+
+  return partons;
+}
+
+
+void TTAllJetsAnalyser::resetMemberData() {
+  selected_jets_.clear();
+  top_quark_ = nullptr;
+  anti_top_quark_ = nullptr;
+  partons_t_.clear();
+  partons_tbar_.clear();
+  parton2jet_.clear();
+  jet2parton_.clear();
+  jet_ttbar_assignment_.clear();
+}
+
+
+Bool_t TTAllJetsAnalyser::matchPartonsWithJets() {
+  // NOTE find top quark and anti top quark
+  for (Int_t gen_p_idx = 0; gen_p_idx < particles_->GetEntries(); gen_p_idx++) {
+    auto gen_p = dynamic_cast<const GenParticle*>(particles_->At(gen_p_idx));
+
+    if ((gen_p->PID == 6) and (gen_p->Status == p8status::kTop)) {
+      top_quark_ = gen_p;
+    } else if ((gen_p->PID == -6) and (gen_p->Status == p8status::kTop)) {
+      anti_top_quark_ = gen_p;
+    }
+
+    if ((top_quark_ != nullptr) and (anti_top_quark_ != nullptr)) {
+      break;
+    }
+  }
+
+  if ((top_quark_ == nullptr) or (anti_top_quark_ == nullptr)) {
+    std::cerr << "[NOT FOUND]" << std::endl;
+    return false;
+  }
+
+  // NOTE
+  partons_t_ = getPartons(top_quark_);
+  partons_tbar_ = getPartons(anti_top_quark_);
+
+  std::vector<const GenParticle*> partons;
+  partons.insert(partons.end(), partons_t_.begin(), partons_t_.end());
+  partons.insert(partons.end(), partons_tbar_.begin(), partons_tbar_.end());
+
+  // NOTE
+  for (const auto & parton : partons) {
+    parton2jet_[parton] = nullptr;
+  }
+
+  for (const auto & jet : selected_jets_) {
+    jet2parton_[jet] = nullptr;
+  }
+
+  bool has_ambiguity = false;
+  for (const auto & parton : partons) {
+    for (const auto & jet : selected_jets_) {
+      Float_t dr = parton->P4().DeltaR(jet->P4());
+
+      if (dr <= kJetPartonMatchingDeltaR_) {
+        if ((parton2jet_[parton] == nullptr) and (jet2parton_[jet] == nullptr)) {
+          parton2jet_[parton] = jet;
+          jet2parton_[jet] = parton;
+        } else {
+          has_ambiguity = true;
+          // break;
+        }
+      } // dr
+    } // jet
+    // if (has_ambiguity) break;
+  } // parton
+
+
+  // NOTE unmatched
+  for (const auto & kv : parton2jet_) {
+    if (kv.second == nullptr) {
+      return false;
+    }
+  }
+
+  if (has_ambiguity) {
+    num_ambiguous_++;
+    return false;
+  }
+
+  for (const auto& jet : selected_jets_) {
+    if (jet2parton_[jet] == nullptr) {
+      jet_ttbar_assignment_[jet] = 0;
+    } else {
+      auto parton = jet2parton_[jet];
+      if (std::find(partons_t_.begin(), partons_t_.end(), parton) != partons_t_.end()) {
+        jet_ttbar_assignment_[jet] = 1;
+      } else {
+        jet_ttbar_assignment_[jet] = -1;
+      }      
+    }
+  }
+
+  return true;
+}
+
+
+Bool_t TTAllJetsAnalyser::selectEvent() {
   UInt_t num_jets = jets_->GetEntries();
   if (num_jets < kMinNumJet_) return false;
 
   // the scalar pT sum of all jets in the event
   Float_t hadronic_activity = 0.0f;
 
-  // Selected events are required to contain at least six jets, at least two
-  // of which have to be tagged as b jets.
   Int_t num_b_jets = 0;
   const Jet* bjet0 = nullptr;
   const Jet* bjet1 = nullptr;
 
   for (UInt_t i = 0; i < num_jets; i++) {
     auto jet = dynamic_cast<const Jet*>(jets_->At(i));
-    // std::cout << i << "-th jet PT: " << jet->PT << std::endl;
-
-    hadronic_activity += jet->PT;
-
     if (jet->PT < kMinJetPT_) continue;
     if (std::fabs(jet->Eta) > kMaxJetEta_) continue;
+
+    hadronic_activity += jet->PT;
 
     if ((i < 6) and (jet->BTag == 1)) {
       num_b_jets++;
 
-      if (bjet0 == nullptr) bjet0 = jet;
+      if      (bjet0 == nullptr) bjet0 = jet;
       else if (bjet1 == nullptr) bjet1 = jet;
     }
 
@@ -276,7 +370,8 @@ Bool_t TTAllJetsAnalyser::selectEvent() {
   if (selected_jets_.size() < kMinNumJet_) return false;
   if (selected_jets_.at(5)->PT < kMinSixthJetPT_) return false; // 6th
 
-  return true;
+  bool has_correct = matchPartonsWithJets();
+  return has_correct;
 }
 
 Int_t TTAllJetsAnalyser::getPFIndex(Int_t pid, Int_t charge) {
@@ -310,32 +405,7 @@ void TTAllJetsAnalyser::analyseEFlow() {
     b_track_charge_.push_back(track->Charge);
     b_track_pid_.push_back(pid);
     b_track_type_.push_back(pf_index);
-
-    b_track_eta_outer_.push_back(track->CtgTheta);
-    b_track_eta_outer_.push_back(track->EtaOuter);
-    b_track_phi_outer_.push_back(track->PhiOuter);
-    b_track_t_.push_back(track->T);
-    b_track_x_.push_back(track->X);
-    b_track_y_.push_back(track->Y);
-    b_track_z_.push_back(track->Z);
-    b_track_t_outer_.push_back(track->TOuter);
-    b_track_x_outer_.push_back(track->XOuter);
-    b_track_y_outer_.push_back(track->YOuter);
-    b_track_z_outer_.push_back(track->ZOuter);
-    b_track_xd_.push_back(track->Xd);
-    b_track_yd_.push_back(track->Yd);
-    b_track_zd_.push_back(track->Zd);
-    b_track_l_.push_back(track->L);
-    b_track_d0_.push_back(track->D0);
     b_track_dz_.push_back(track->DZ);
-    b_track_error_p_.push_back(track->ErrorP);
-    b_track_error_pt_.push_back(track->ErrorPT);
-    b_track_error_phi_.push_back(track->ErrorPhi);
-    b_track_error_ctg_theta_.push_back(track->ErrorCtgTheta);
-    b_track_error_t_.push_back(track->ErrorT);
-    b_track_error_d0_.push_back(track->ErrorD0);
-    b_track_error_dz_.push_back(track->ErrorDZ);
-
   }
 
   // for (Int_t idx = 0; idx < eflow_neutral_hadrons_->GetEntries(); idx++) {
@@ -362,48 +432,8 @@ void TTAllJetsAnalyser::analyseEFlow() {
 
 }
 
-Bool_t TTAllJetsAnalyser::trackBottomQuark(const GenParticle* p) {
-  Bool_t found_b = false;
-  // FIXME consider M2
-  while (p->M1 != -1) {
-    p = dynamic_cast<GenParticle*>(particles_->At(p->M1));
-    if ((std::abs(p->PID) == pdgid::kBottom) and (p->Status == p8status::kBottom)) {
-      found_b = true;
-      break;
-    }
-  }
-  return found_b;
-}
-
-
-Float_t TTAllJetsAnalyser::getBDaughterRatio(const Jet* jet) {
-  Int_t num_daughters = jet->Particles.GetEntries();
-  Int_t num_from_b = 0;
-  for (Int_t idx = 0; idx < num_daughters; idx++) {
-    auto dau = dynamic_cast<GenParticle*>(jet->Particles.At(idx));
-    if (trackBottomQuark(dau)) {
-      num_from_b++;
-    }
-  }
-
-  Float_t b_ratio = static_cast<Float_t>(num_from_b) / num_daughters;
-  return b_ratio;
-}
-
-
 
 void TTAllJetsAnalyser::analyseJet() {
-
-  std::vector<GenParticle*> bottom_quarks;
-  for (Int_t p_idx = 0; p_idx < particles_->GetEntries(); p_idx++) {
-    auto p = dynamic_cast<GenParticle*>(particles_->At(p_idx));
-    if ((std::abs(p->PID) == pdgid::kBottom) and (p->Status == p8status::kBottom)) {
-      bottom_quarks.push_back(p);
-    }
-  }
-
-
-
 
   Int_t jet_count = 0;
   for (const auto & jet : selected_jets_) {
@@ -523,25 +553,21 @@ void TTAllJetsAnalyser::analyseJet() {
     // NOTE b-jet properties
     ////////////////////////////////////////////////////////////////////////////
     b_jet_b_tag_.push_back(jet->BTag);
-    b_jet_b_tag_algo_.push_back(jet->BTagAlgo);
-    b_jet_b_tag_phys_.push_back(jet->BTagPhys);
 
-    Bool_t found_matched_b = false;
-    for (const auto & b_quark : bottom_quarks) {
-      Double_t delta_r = b_quark->P4().DeltaR(jet->P4());
-      if (delta_r < kBMatchingDeltaR_) {
-        found_matched_b = true;
-        break;
+    b_jet_ttbar_assignment_.push_back(jet_ttbar_assignment_[jet]);
+
+
+    if (jet2parton_[jet] == nullptr) {
+      b_jet_b_assignment_.push_back(0);
+    }  else {
+
+      if (std::abs(jet2parton_[jet]->PID) == 5) {
+        b_jet_b_assignment_.push_back(1);
+      } else {
+        b_jet_b_assignment_.push_back(0);
       }
+
     }
-    b_jet_b_dr_matching_.push_back(found_matched_b);
-
-    Float_t b_dau_ratio = getBDaughterRatio(jet);
-    b_jet_b_tracking_.push_back(b_dau_ratio);
-
-    ////////////////////////////////////////////////////////////////////////////
-    // NOTE
-    ////////////////////////////////////////////////////////////////////////////
 
   } // end loop over jets
 }
@@ -577,6 +603,8 @@ void TTAllJetsAnalyser::loop() {
     }
 
     resetBranch();
+    resetMemberData();
+
     if (selectEvent()) {
       analyse();
     }
