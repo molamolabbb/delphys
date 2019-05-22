@@ -72,10 +72,11 @@ class TTAllJetsAnalyser : private BaseAnalyser {
   std::vector<const GenParticle*> getPartons(const GenParticle* top); 
   Bool_t matchPartonsWithJets();
 
-  // Bool_t trackBottomQuark(const GenParticle* p);
-  // Float_t getBDaughterRatio(const Jet* jet);
   Int_t getPFIndex(Int_t pid, Int_t charge);
 
+  //////////////////////////////////////////////////////////////////////////////
+  // NOTE member data
+  //////////////////////////////////////////////////////////////////////////////
 
   std::vector<const Jet*> selected_jets_;
 
@@ -90,19 +91,19 @@ class TTAllJetsAnalyser : private BaseAnalyser {
   std::map<const Jet*, const GenParticle*> jet2parton_;
   std::map<const Jet*, Int_t> jet_ttbar_assignment_;
 
+  // NOTE stats
+  UInt_t num_ambiguous_;
 
   //////////////////////////////////////////////////////////////////////////////
   // NOTE Branches
   //////////////////////////////////////////////////////////////////////////////
   // per event
-  // NOTE it doesn't follow the CMSSW naming rule to be consistent with other 
   Int_t b_label_;
-
-  // unordered set
   Int_t b_num_eflow_;
   Int_t b_num_track_;
   Int_t b_num_tower_;
 
+  // per EnergyFlow
   std::vector<Float_t> b_eflow_pt_;
   std::vector<Float_t> b_eflow_eta_;
   std::vector<Float_t> b_eflow_phi_;
@@ -113,40 +114,12 @@ class TTAllJetsAnalyser : private BaseAnalyser {
   std::vector<Float_t> b_track_pt_;
   std::vector<Float_t> b_track_eta_;
   std::vector<Float_t> b_track_phi_;
-  std::vector<Float_t> b_track_ctg_theta_;
   std::vector<Int_t>   b_track_charge_;
   std::vector<Int_t>   b_track_pid_;
   std::vector<Int_t>   b_track_type_;
-  // NOTE
-  // https://cp3.irmp.ucl.ac.be/projects/delphes/wiki/WorkBook/RootTreeDescription
-  // https://github.com/delphes/delphes/blob/190cfa0452684435bbe0070f6460421bd036a836/classes/DelphesClasses.h#L441-L469
-  /*
-  std::vector<Float_t> b_track_eta_outer_;
-  std::vector<Float_t> b_track_phi_outer_;
-  std::vector<Float_t> b_track_t_; 
-  std::vector<Float_t> b_track_x_;
-  std::vector<Float_t> b_track_y_;
-  std::vector<Float_t> b_track_z_;
-  std::vector<Float_t> b_track_t_outer_;
-  std::vector<Float_t> b_track_x_outer_;
-  std::vector<Float_t> b_track_y_outer_;
-  std::vector<Float_t> b_track_z_outer_;
-  std::vector<Float_t> b_track_xd_;
-  std::vector<Float_t> b_track_yd_;
-  std::vector<Float_t> b_track_zd_;
-  std::vector<Float_t> b_track_l_;
-  */
   std::vector<Float_t> b_track_dz_;
   std::vector<Float_t> b_track_d0_;
-  /*
-  std::vector<Float_t> b_track_error_p_;
-  std::vector<Float_t> b_track_error_pt_;
-  std::vector<Float_t> b_track_error_phi_;
-  std::vector<Float_t> b_track_error_ctg_theta_;
-  std::vector<Float_t> b_track_error_t_;
-  std::vector<Float_t> b_track_error_d0_;
-  std::vector<Float_t> b_track_error_dz_;
-  */
+
   std::vector<Float_t> b_tower_pt_; // actually ET
   std::vector<Float_t> b_tower_eta_;
   std::vector<Float_t> b_tower_phi_;
@@ -180,9 +153,6 @@ class TTAllJetsAnalyser : private BaseAnalyser {
 
   // refer https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagMCTools#Legacy_parton_based_jet_flavour
   std::vector<Bool_t> b_jet_b_tag_;
-
-  // std::vector<Bool_t> b_jet_b_dr_matching_;
-  // std::vector<Bool_t> b_jet_b_tracking_;
 
   std::vector<Int_t> b_jet_ttbar_assignment_;
   std::vector<Int_t> b_jet_b_assignment_;
@@ -220,7 +190,7 @@ class TTAllJetsAnalyser : private BaseAnalyser {
   const Float_t kMaxDeltaRTwoBJets = 2.0;
 
   // my cuts
-  const Float_t kBMatchingDeltaR_ = 0.3;
+  const Float_t kJetPartonMatchingDeltaR_ = 0.3;
 };
 
 
