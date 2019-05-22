@@ -59,19 +59,37 @@ class TTAllJetsAnalyser : private BaseAnalyser {
   // inherited
   void makeBranch();
   void resetBranch();
+  void resetMemberData();
+
+
   Bool_t selectEvent();
   void analyse();
-
 
   void analyseEFlow();
   void analyseJet();
 
-  Bool_t trackBottomQuark(const GenParticle* p);
-  Float_t getBDaughterRatio(const Jet* jet);
+  std::vector<const GenParticle*> getDaughters(const GenParticle* mother); 
+  std::vector<const GenParticle*> getPartons(const GenParticle* top); 
+  Bool_t matchPartonsWithJets();
 
+  // Bool_t trackBottomQuark(const GenParticle* p);
+  // Float_t getBDaughterRatio(const Jet* jet);
   Int_t getPFIndex(Int_t pid, Int_t charge);
 
+
   std::vector<const Jet*> selected_jets_;
+
+  const GenParticle* top_quark_;
+  const GenParticle* anti_top_quark_;
+
+  // partons from top / anti-top quark
+  std::vector<const GenParticle*> partons_t_;
+  std::vector<const GenParticle*> partons_tbar_;
+
+  std::map<const GenParticle*, const Jet*> parton2jet_;
+  std::map<const Jet*, const GenParticle*> jet2parton_;
+  std::map<const Jet*, Int_t> jet_ttbar_assignment_;
+
 
   //////////////////////////////////////////////////////////////////////////////
   // NOTE Branches
@@ -102,6 +120,7 @@ class TTAllJetsAnalyser : private BaseAnalyser {
   // NOTE
   // https://cp3.irmp.ucl.ac.be/projects/delphes/wiki/WorkBook/RootTreeDescription
   // https://github.com/delphes/delphes/blob/190cfa0452684435bbe0070f6460421bd036a836/classes/DelphesClasses.h#L441-L469
+  /*
   std::vector<Float_t> b_track_eta_outer_;
   std::vector<Float_t> b_track_phi_outer_;
   std::vector<Float_t> b_track_t_; 
@@ -116,8 +135,10 @@ class TTAllJetsAnalyser : private BaseAnalyser {
   std::vector<Float_t> b_track_yd_;
   std::vector<Float_t> b_track_zd_;
   std::vector<Float_t> b_track_l_;
+  */
   std::vector<Float_t> b_track_dz_;
   std::vector<Float_t> b_track_d0_;
+  /*
   std::vector<Float_t> b_track_error_p_;
   std::vector<Float_t> b_track_error_pt_;
   std::vector<Float_t> b_track_error_phi_;
@@ -125,7 +146,7 @@ class TTAllJetsAnalyser : private BaseAnalyser {
   std::vector<Float_t> b_track_error_t_;
   std::vector<Float_t> b_track_error_d0_;
   std::vector<Float_t> b_track_error_dz_;
-
+  */
   std::vector<Float_t> b_tower_pt_; // actually ET
   std::vector<Float_t> b_tower_eta_;
   std::vector<Float_t> b_tower_phi_;
@@ -158,15 +179,13 @@ class TTAllJetsAnalyser : private BaseAnalyser {
   std::vector<Float_t> b_jet_ptd_;
 
   // refer https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagMCTools#Legacy_parton_based_jet_flavour
-  // std::vector<Bool_t> b_jet_flavor_;
-  // std::vector<Bool_t> b_jet_flavor_algo_;
-  // std::vector<Bool_t> b_jet_flavor_phys_;
   std::vector<Bool_t> b_jet_b_tag_;
-  std::vector<Bool_t> b_jet_b_tag_algo_;
-  std::vector<Bool_t> b_jet_b_tag_phys_;
 
-  std::vector<Bool_t> b_jet_b_dr_matching_;
-  std::vector<Bool_t> b_jet_b_tracking_;
+  // std::vector<Bool_t> b_jet_b_dr_matching_;
+  // std::vector<Bool_t> b_jet_b_tracking_;
+
+  std::vector<Int_t> b_jet_ttbar_assignment_;
+  std::vector<Int_t> b_jet_b_assignment_;
 
   // NOTE constituents of jet
   std::vector<std::vector<Float_t> > b_con_pt_;
@@ -178,15 +197,19 @@ class TTAllJetsAnalyser : private BaseAnalyser {
 
   //////////////////////////////////////////////////////////////////////////////
   // NOTE selection cut
-  // Refer
   // https://arxiv.org/abs/1812.10534
-  // Measurement of the top quark mass in the all-jets final state at s√= 13 TeV
-  // and combination with the lepton+jets channel
+  // Measurement of the top quark mass in the all-jets final state at
+  // \sqrt(s) = 13 TeV and combination with the lepton+jets channel
   //////////////////////////////////////////////////////////////////////////////
   const Float_t kMinJetPT_ = 30.0f;
   const Float_t kMaxJetEta_ = 2.4f;
 
-  // Offline Selection
+  // NOTE HLT
+  const Float_t kHLTMinNumJets_ = 6;
+  const Float_t kHLTMinHT_ = 450.0f;
+  const Float_t kHLTMinNumBJets_= 1;
+
+  // NOTE Offline Selection
   // vertex z 24cm, xy 2cm
   const UInt_t kMinNumJet_ = 6; // PF jets
   const Int_t kMinNumBJet_ = 2;
