@@ -351,7 +351,14 @@ Bool_t TTAllJetsAnalyser::selectEvent() {
     hadronic_activity += jet->PT;
   }
 
-  // NOTE TClonesArray* Jet is already sorted in order of p_T
+  // NOTE HLT
+  if (hadronic_activity < kHLTMinHT_) return false;
+
+  UInt_t  num_selected_jets  = selected_jets_.size();
+  if (num_selected_jets < kHLTMinNumJets_) return false;
+
+  Float_t sixth_jet_pt       = selected_jets_.at(5)->PT;
+  if (sixth_jet_pt < kHLTMinSixthJetPT_) return false;
 
   std::vector<const Jet*> selected_b_jets;
   std::copy_if(selected_jets_.begin(),
@@ -359,18 +366,13 @@ Bool_t TTAllJetsAnalyser::selectEvent() {
                std::back_inserter(selected_b_jets),
                [](const Jet* each) {return each->BTag == 1;});
 
-  UInt_t  num_selected_jets  = selected_jets_.size();
-  Float_t sixth_jet_pt       = selected_jets_.at(5)->PT;
   UInt_t  num_b_jets         = selected_b_jets.size();
-
-  // NOTE HLT
-  if (num_selected_jets < kHLTMinNumJets_)        return false;
-  if (sixth_jet_pt      < kHLTMinSixthJetPT_)     return false;
-  if (hadronic_activity < kHLTMinHT_)             return false;
-  if (num_b_jets        < kHLTMinNumBJets_)       return false;
+  if (num_b_jets < kHLTMinNumBJets_) return false;
 
   // NOTE Offline
   if (kDoOfflineSelection_) {
+    if (num_b_jets < kOffMinNumBJets_) return false;
+
     auto bjet0 = selected_b_jets.at(0);
     auto bjet1 = selected_b_jets.at(1);
     Float_t dr_bb = bjet0->P4().DeltaR(bjet1->P4());
@@ -380,8 +382,7 @@ Bool_t TTAllJetsAnalyser::selectEvent() {
     // if (sixth_jet_pt      < kOffMinSixthJetPT_) return false;
     // if (hadronic_activity < kOffMinHT_)         return false;
 
-    if (num_b_jets           < kOffMinNumBJets_)   return false;
-    if (dr_bb                < kOffMinDeltaRbb_)    return false; 
+    if (dr_bb < kOffMinDeltaRbb_) return false; 
   }
 
   // NOTE Jet-Parton Assignment
