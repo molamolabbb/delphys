@@ -385,9 +385,13 @@ Bool_t TTAllJetsAnalyser::selectEvent() {
     if (dr_bb < kOffMinDeltaRbb_) return false; 
   }
 
-  // NOTE Jet-Parton Assignment
-  bool has_correct = matchPartonsWithJets();
-  return has_correct;
+  if (b_label_ == 1) {
+    // NOTE Jet-Parton Assignment
+    bool has_correct = matchPartonsWithJets();
+    return has_correct;
+  } else {
+    return true;
+  }
 }
 
 Int_t TTAllJetsAnalyser::getPFIndex(Int_t pid, Int_t charge) {
