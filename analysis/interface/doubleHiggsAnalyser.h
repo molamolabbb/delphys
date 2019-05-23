@@ -1,11 +1,11 @@
 #ifndef doubleHiggsAnalyser_H
 #define doubleHiggsAnalyser_H
-#include "delphys/oxbridgekinetics/src/Mt2/Basic_Mt2_332_Calculator.h"
-#include "delphys/oxbridgekinetics/src/Mt2/ChengHanBisect_Mt2_332_Calculator.h"
-#include "TMVA/Tools.h"
-#include "TMVA/Reader.h"
-#include "TMVA/DataLoader.h"
-#include "TMVA/MethodCuts.h"
+#include "delphys/external/src/Mt2/Basic_Mt2_332_Calculator.h"
+#include "delphys/external/src/Mt2/ChengHanBisect_Mt2_332_Calculator.h"
+//#include "TMVA/Tools.h"
+//#include "TMVA/Reader.h"
+//#include "TMVA/DataLoader.h"
+//#include "TMVA/MethodCuts.h"
 #include "TMinuit.h"
 #include "TError.h"
 
@@ -65,7 +65,7 @@ private :
 
   ////TMVA variables
   //reader
-  TMVA::Reader* bdtg_reader;
+  //TMVA::Reader* bdtg_reader;
   Float_t tmva_bdtg_output = 0;
 
   // TLorentzVectors
@@ -111,7 +111,7 @@ public :
   // before loop settings
   void MakeOutputBranch(TTree *tree);
   void SetOutput(TString output_file_name);
-  void SetTMVA(TString weight_file_path);
+  //void SetTMVA(TString weight_file_path);
   void SetBranchAddress();
   void SetNanoBranchAddress();
   void SetDelphesBranchAddress();

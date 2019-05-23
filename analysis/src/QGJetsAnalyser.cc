@@ -552,7 +552,7 @@ void QGJetsAnalyser::makeJetImage() {
 }
 
 
-void QGJetsAnalyser::Loop() {
+void QGJetsAnalyser::loop() {
   const Int_t kNumTotal = in_tree_->GetEntries();
   const Int_t kPrintFreq = kNumTotal / 20;
   TString msg_fmt = TString::Format("[%s/%d (%s %%)]", "%d", kNumTotal, "%.2f");

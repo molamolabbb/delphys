@@ -3,22 +3,21 @@
 #include "TSystem.h"
 
 int main(int argc, char* argv[]) {
+  // TODO argument parser
+  if (argc != 4) {
+    std::cout << "Usage: analyseTTAllJets inputFile outputFile label" << std::endl;
+    std::cerr << "Usage: analyseTTAllJets inputFile outputFile label" << std::endl;
+    return 1;
+  }
+
   TString in_path(argv[1]);
   TString out_path(argv[2]);
+  Int_t label = std::atoi(argv[3]);
 
   TString in_name = gSystem->BaseName(in_path);
 
-  Int_t label = -1;
-  if (in_name.Contains("TT")) {
-    label = 1;
-  } else if (in_name.Contains("QCD")) {
-    label = 0;
-  } else {
-    return 1;
-  } 
-
-  TTAllJetsAnalyser analyser(in_path, out_path, label);
-  analyser.Loop();
+  TTAllJetsAnalyser analyser(in_path, out_path, label, /*do_offline_selection=*/false);
+  analyser.loop();
 
   return 0;
 }

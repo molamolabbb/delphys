@@ -17,8 +17,8 @@
 
 #include "classes/DelphesClasses.h"
 #include "delphys/external/interface/lester_mt2_bisect.h"
-#include "delphys/oxbridgekinetics/src/Mt2/Basic_Mt2_332_Calculator.h"
-#include "delphys/oxbridgekinetics/src/Mt2/ChengHanBisect_Mt2_332_Calculator.h"
+#include "delphys/external/src/Mt2/Basic_Mt2_332_Calculator.h"
+#include "delphys/external/src/Mt2/ChengHanBisect_Mt2_332_Calculator.h"
 
 using namespace std;
 
@@ -110,6 +110,7 @@ void doubleHiggsAnalyser::SetOutput(TString output_file_name) {
   n_events_tree = new TTree("nevents","nevents");
 }
 
+/*
 void doubleHiggsAnalyser::SetTMVA(TString weight_file_path) {
   bdtg_reader = new TMVA::Reader();
   bdtg_reader->AddVariable("ll_deltaR", &ll_deltaR);
@@ -125,7 +126,7 @@ void doubleHiggsAnalyser::SetTMVA(TString weight_file_path) {
   bdtg_reader->AddVariable("basic_MT2_332_bbll", &basic_MT2_332_bbll);
   bdtg_reader->BookMVA("BDTG", weight_file_path);
 }
-
+*/
 void doubleHiggsAnalyser::SetBranchAddress() {
   del_tree->SetBranchAddress("Particle",&particles);
   del_tree->SetBranchAddress("Muon",&muons);
@@ -373,7 +374,7 @@ bool doubleHiggsAnalyser::Analysis() {
     basic_MT2_332_l = basic_mt2_332Calculator.mt2_332(vis_A_l, vis_B_l, pT_Miss_l, missing.M());
     ch_bisect_MT2_332_l = ch_bisect_mt2_332Calculator.mt2_332(vis_A_l, vis_B_l, pT_Miss_l, missing.M());
     
-    tmva_bdtg_output = bdtg_reader->EvaluateMVA("BDTG");
+    //tmva_bdtg_output = bdtg_reader->EvaluateMVA("BDTG");
     return true;
 }
 
@@ -432,7 +433,7 @@ int main(Int_t argc,Char_t** argv)
     
   doubleHiggsAnalyser ana(tree, true);
   ana.Initiate(output_name); // usage : Initiate("outputfilename.root")
-  ana.SetTMVA(weight_file_path);
+  //ana.SetTMVA(weight_file_path);
   ana.Loop(); // Loop through the events and do doubleHIggsAnalyser::Analysis() per event.
   ana.Finalize(); // Write the tree and Close the file.
   return 0;

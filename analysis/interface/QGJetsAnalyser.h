@@ -12,7 +12,7 @@ class QGJetsAnalyser : private BaseAnalyser {
                  Bool_t is_dijet,
                  Int_t label);
   ~QGJetsAnalyser();
-  void Loop();
+  void loop();
 
  private:
   // inherited
