@@ -13,9 +13,11 @@ using namespace delphys;
 
 TTAllJetsAnalyser::TTAllJetsAnalyser(const TString & in_path,
                                      const TString & out_path,
-                                     Int_t label) :
-    BaseAnalyser(in_path, out_path, "delphys"),
-    b_label_(label) {
+                                     Int_t label,
+                                     bool do_offline_selection)
+    : BaseAnalyser(in_path, out_path, "delphys"),
+      b_label_(label),
+      kDoOfflineSelection_(do_offline_selection) {
 
   std::cout << "ctor begin" << std::endl;
 
@@ -23,9 +25,11 @@ TTAllJetsAnalyser::TTAllJetsAnalyser(const TString & in_path,
   setBranchAddress({"Vertex"}, /*drop=*/true);
   std::cout << "setBranchAddress end" << std::endl;
 
+  std::cout << "makeBranch begin" << std::endl;
   makeBranch();
+  std::cout << "makeBranch end" << std::endl;
 
-  // Initialise member data
+  // NOTE Initialise member data
   num_ambiguous_ = 0;
 
   std::cout << "ctor end" << std::endl;
@@ -38,7 +42,6 @@ TTAllJetsAnalyser::~TTAllJetsAnalyser() {
   out_file_->Write();
   out_file_->Close();
 
-
   std::cout << "# of events having ambiguous jet-parton assignment: "
             << num_ambiguous_
             << std::endl;
@@ -47,7 +50,6 @@ TTAllJetsAnalyser::~TTAllJetsAnalyser() {
 }
 
 void TTAllJetsAnalyser::makeBranch() {
-  std::cout << "MakeBranch begin" << std::endl;
 
   resetBranch();
   gInterpreter->GenerateDictionary("vector<vector<Int_t> >", "vector"); 
@@ -131,7 +133,6 @@ void TTAllJetsAnalyser::makeBranch() {
   BRANCH_ANY(con_pid);
   BRANCH_ANY(con_type);
 
-  std::cout << "MakeBranch end" << std::endl;
   return ;
 }
 
@@ -159,11 +160,11 @@ void TTAllJetsAnalyser::resetBranch() {
   b_tower_pid_.clear();
   b_tower_type_.clear();
 
-  b_met_ = -1.0f;
+  b_met_     = -1.0f;
   b_met_eta_ = 100.0f;
   b_met_phi_ = 100.0f;
 
-  b_num_b_jets_ = 0;
+  b_num_b_jets_   = 0;
   b_num_b_jets_6_ = 0;
 
   b_jet_pt_.clear();
@@ -334,42 +335,56 @@ Bool_t TTAllJetsAnalyser::matchPartonsWithJets() {
 
 
 Bool_t TTAllJetsAnalyser::selectEvent() {
+  // NOTE to speed up selection
   UInt_t num_jets = jets_->GetEntries();
-  if (num_jets < kMinNumJet_) return false;
+  if (num_jets < kHLTMinNumJets_) return false;
 
-  // the scalar pT sum of all jets in the event
+  // the scalar p_T sum of all jets in the event
   Float_t hadronic_activity = 0.0f;
-
-  Int_t num_b_jets = 0;
-  const Jet* bjet0 = nullptr;
-  const Jet* bjet1 = nullptr;
 
   for (UInt_t i = 0; i < num_jets; i++) {
     auto jet = dynamic_cast<const Jet*>(jets_->At(i));
     if (jet->PT < kMinJetPT_) continue;
     if (std::fabs(jet->Eta) > kMaxJetEta_) continue;
 
-    hadronic_activity += jet->PT;
-
-    if ((i < 6) and (jet->BTag == 1)) {
-      num_b_jets++;
-
-      if      (bjet0 == nullptr) bjet0 = jet;
-      else if (bjet1 == nullptr) bjet1 = jet;
-    }
-
     selected_jets_.push_back(jet);
+    hadronic_activity += jet->PT;
   }
 
-  if (hadronic_activity < kMinHT_) return false;
-  if (num_b_jets < kMinNumBJet_) return false;
+  // NOTE TClonesArray* Jet is already sorted in order of p_T
 
-  Float_t delta_r_bb = bjet0->P4().DeltaR(bjet1->P4());
-  if (delta_r_bb < kMaxDeltaRTwoBJets) return false; 
+  std::vector<const Jet*> selected_b_jets;
+  std::copy_if(selected_jets_.begin(),
+               selected_jets_.begin() + 6,
+               std::back_inserter(selected_b_jets),
+               [](const Jet* each) {return each->BTag == 1;});
 
-  if (selected_jets_.size() < kMinNumJet_) return false;
-  if (selected_jets_.at(5)->PT < kMinSixthJetPT_) return false; // 6th
+  UInt_t  num_selected_jets  = selected_jets_.size();
+  Float_t sixth_jet_pt       = selected_jets_.at(5)->PT;
+  UInt_t  num_b_jets         = selected_b_jets.size();
 
+  // NOTE HLT
+  if (num_selected_jets < kHLTMinNumJets_)        return false;
+  if (sixth_jet_pt      < kHLTMinSixthJetPT_)     return false;
+  if (hadronic_activity < kHLTMinHT_)             return false;
+  if (num_b_jets        < kHLTMinNumBJets_)       return false;
+
+  // NOTE Offline
+  if (kDoOfflineSelection_) {
+    auto bjet0 = selected_b_jets.at(0);
+    auto bjet1 = selected_b_jets.at(1);
+    Float_t dr_bb = bjet0->P4().DeltaR(bjet1->P4());
+
+    // NOTE cut value is the same as that of HLT in the reference paper. 
+    // if (num_selected_jets < kOffMinNumJets_)    return false;
+    // if (sixth_jet_pt      < kOffMinSixthJetPT_) return false;
+    // if (hadronic_activity < kOffMinHT_)         return false;
+
+    if (num_b_jets           < kOffMinNumBJets_)   return false;
+    if (dr_bb                < kOffMinDeltaRbb_)    return false; 
+  }
+
+  // NOTE Jet-Parton Assignment
   bool has_correct = matchPartonsWithJets();
   return has_correct;
 }
@@ -575,12 +590,11 @@ void TTAllJetsAnalyser::analyseJet() {
 
 
 void TTAllJetsAnalyser::analyse() {
-
   analyseEFlow();
   analyseJet();
 
   auto missing_et = dynamic_cast<MissingET*>(mets_->At(0));
-  b_met_ = missing_et->MET;
+  b_met_     = missing_et->MET;
   b_met_eta_ = missing_et->Eta;
   b_met_phi_ = missing_et->Phi;
 

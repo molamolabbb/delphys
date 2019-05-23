@@ -3,6 +3,7 @@
 #include "TSystem.h"
 
 int main(int argc, char* argv[]) {
+  // TODO argument parser
   if (argc != 4) {
     std::cout << "Usage: analyseTTAllJets inputFile outputFile label" << std::endl;
     std::cerr << "Usage: analyseTTAllJets inputFile outputFile label" << std::endl;
@@ -15,7 +16,7 @@ int main(int argc, char* argv[]) {
 
   TString in_name = gSystem->BaseName(in_path);
 
-  TTAllJetsAnalyser analyser(in_path, out_path, label);
+  TTAllJetsAnalyser analyser(in_path, out_path, label, /*do_offline_selection=*/false);
   analyser.loop();
 
   return 0;
