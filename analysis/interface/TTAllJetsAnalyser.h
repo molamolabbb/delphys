@@ -50,7 +50,8 @@ class TTAllJetsAnalyser : private BaseAnalyser {
  public:
   TTAllJetsAnalyser(const TString & in_path,
                     const TString & out_path,
-                    Int_t label);
+                    Int_t label,
+                    bool do_offline_selection);
 
   ~TTAllJetsAnalyser();
   void loop();
@@ -167,27 +168,28 @@ class TTAllJetsAnalyser : private BaseAnalyser {
 
   //////////////////////////////////////////////////////////////////////////////
   // NOTE selection cut
-  // https://arxiv.org/abs/1812.10534
   // Measurement of the top quark mass in the all-jets final state at
-  // \sqrt(s) = 13 TeV and combination with the lepton+jets channel
+  // \sqrt{s} = 13 TeV and combination with the lepton+jets channel
+  // https://link.springer.com/article/10.1140/epjc/s10052-019-6788-2
   //////////////////////////////////////////////////////////////////////////////
-  const Float_t kMinJetPT_ = 30.0f;
+  // NOTE Object Selection
+  const Float_t kMinJetPT_  = 30.0f;
   const Float_t kMaxJetEta_ = 2.4f;
 
   // NOTE HLT
-  const Float_t kHLTMinNumJets_ = 6;
-  const Float_t kHLTMinHT_ = 450.0f;
-  const Float_t kHLTMinNumBJets_= 1;
+  const UInt_t  kHLTMinNumJets_  = 6;
+  const Float_t kHLTMinSixthJetPT_ = 40.0f; // GeV
+  const Float_t kHLTMinHT_       = 450.0f;
+  const UInt_t  kHLTMinNumBJets_ = 1; // b-tagged jets
 
   // NOTE Offline Selection
-  // vertex z 24cm, xy 2cm
-  const UInt_t kMinNumJet_ = 6; // PF jets
-  const Int_t kMinNumBJet_ = 2;
-  const Float_t kMinSixthJetPT_ = 40.0f; // GeV
-  // kMinHT_: hadronic activity
-  // It is the scalar p_T sum of all jets in the event
-  const Float_t kMinHT_ = 450.0f; // GeV
-  const Float_t kMaxDeltaRTwoBJets = 2.0;
+  const UInt_t  kOffMinNumJet_   = 6;
+  const Float_t kOffMinSixthJetPT_ = 40.0f; // GeV
+  const Float_t kOffMinHT_       = 450.0f; // GeV
+  const UInt_t  kOffMinNumBJets_ = 2;
+  const Float_t kOffMinDeltaRbb_ = 2.0f; // between two b jets
+
+  const Bool_t kDoOfflineSelection_;
 
   // my cuts
   const Float_t kJetPartonMatchingDeltaR_ = 0.3;
