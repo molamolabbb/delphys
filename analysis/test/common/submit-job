@@ -81,16 +81,16 @@ def stringize(value, delimiter=" "):
 
 
 def process_arg(arg):
-    if os.path.exists(arg):
-        if HOST in (UI10, UI20):
-            if arg.startswith("/xrootd/store"):
-                arg = arg.replace("/xrootd/", KISTI_XRD_BASE)
-            elif arg.startswith('~'):
-                arg = os.path.expanduser(arg)
-            else:
-                arg = os.path.abspath(arg)
+    # FIXME be careful..
+    if HOST in (UI10, UI20):
+        if arg.startswith("/xrootd/store"):
+            arg = arg.replace("/xrootd/", KISTI_XRD_BASE)
+        elif arg.startswith('~'):
+            arg = os.path.expanduser(arg)
         else:
-            raise NotImplementedError
+            arg = os.path.abspath(arg)
+    else:
+        raise NotImplementedError
     return arg
                 
 
