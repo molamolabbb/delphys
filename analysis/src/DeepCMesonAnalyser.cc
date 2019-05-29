@@ -35,6 +35,7 @@ void DeepCMesonAnalyser::makeBranch() {
     out_tree_->Branch("track_yd", "std::vector<float>", &track_yd_);
     out_tree_->Branch("track_zd", "std::vector<float>", &track_zd_);
     out_tree_->Branch("track_errd0", "std::vector<float>", &track_errd0_);
+    out_tree_->Branch("track_mass", "std::vector<float>", &track_mass_);
     
     out_tree_->Branch("track_charge", "std::vector<int>", &track_charge_);
     out_tree_->Branch("track_pId", "std::vector<int>", &track_pId_);
@@ -75,6 +76,7 @@ void DeepCMesonAnalyser::resetOnEachJet() {
     track_yd_.clear();
     track_zd_.clear();    
     track_errd0_.clear();
+    track_mass_.clear();
    
     track_costompId_.clear();
     mother_pId_.clear();
@@ -104,14 +106,13 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
         for (Int_t idx_dau = 0; idx_dau < jet -> Constituents.GetEntries(); idx_dau++) {
             TObject* daughter = jet->Constituents.At(idx_dau);
             TLorentzVector jet_p4 = jet->P4();
+            
+            // Jet selection  
+            if (abs(jet->Eta) > 2.4) continue;
+            if (jet->PT < 20) continue;
 
             // We need only track particles
             if (auto track = dynamic_cast<Track*>(daughter)) {
-                
-                // Particle selection  
-                if (abs(track->Eta) > 2.4) continue;
-                if (abs(track->PT) < 20) continue;
-
                 // Save all track informations
                 jet_num_track_ = jet_num_track_ + 1;
                 
@@ -127,6 +128,7 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
                 track_yd_.push_back(track->Yd);
                 track_zd_.push_back(track->Zd);
                 track_errd0_.push_back(track->ErrorD0);
+                track_mass_.push_back(track->P4().M());
                 
                 track_charge_.push_back(track->Charge);
                 track_pId_.push_back(track->PID);
@@ -193,6 +195,8 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
                     pticle_label_.push_back(0);
                 }//mother1
             }//track
+            
+
         }//daughter 
     
         // Jet labelling    
@@ -210,7 +214,8 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
         if (jet_label_ != 3){
             replace(pticle_label_.begin(), pticle_label_.end(), 1, 0);
         }
-        if (jet_num_track_ > 0) {
+        // Jet selection last 
+        if (jet_num_track_ > 1) {
         out_tree_->Fill();
         }
     }//jet
