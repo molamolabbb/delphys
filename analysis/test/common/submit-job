@@ -1,0 +1,150 @@
+#!/usr/bin/env python
+from __future__ import division
+from __future__ import print_function
+
+import os
+import argparse
+from datetime import datetime
+from collections import Iterable
+# from socket import gethostname
+
+# NOTE constants
+HOST = os.environ["HOSTNAME"]
+UI10 = 'ui10.sdfarm.kr'
+UI20 = 'ui20.sdfarm.kr'
+GATE = 'gate.sscc.uos.ac.kr'
+GATE2 = 'gate2.sscc.uos.ac.kr'
+
+KISTI_XRD_BASE = "root://cms-xrdr.private.lo:2094///xrd/"
+
+
+def generate_jds(executable, arguments, job_dir):
+    jds = """ #
+executable = {executable}
+universe = vanilla
+log = {job_dir}/condor.log
+getenv = True
+
+arguments = {arguments}
+
+should_transfer_files = YES
+
+when_to_transfer_output = ON_EXIT
+output = {job_dir}/job_$(Process).log
+error = {job_dir}/job_$(Process).err
+""".format(executable=executable, arguments=arguments, job_dir=job_dir)
+
+    if HOST in (UI10, UI20):
+        jds += '''accounting_group=group_cms\n'''
+
+    if HOST == UI10:
+        jds += '''requirements = ( HasSingularity == true )  
++SingularityImage = "/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-el6:latest"
++SingularityBind = "/cvmfs, /cms, /share"\n'''
+
+    jds += "queue"
+    return jds
+
+
+def find_executable(executable):
+    '''
+    '''
+    if os.path.exists(executable):
+        if executable.startswith("~"):
+            executable = os.path.expanduser(executable)
+        else:
+            executable = os.path.abspath(executable)
+    elif os.environ.has_key("CMSSW_BASE"):
+        bin_dir = os.path.join(os.environ["CMSSW_BASE"], 'bin',
+                               os.environ["SCRAM_ARCH"])
+        entries = os.listdir(bin_dir)
+
+        if executable in entries:
+            executable = os.path.join(bin_dir, executable)
+        else:
+            for each in entries:
+                print(each)
+            raise IOError
+    else:
+        raise IOError
+
+    return executable
+
+def stringize(value, delimiter=" "):
+    '''
+    '''
+    if isinstance(value, Iterable):
+        string = delimiter.join([str(each) for each in value])
+    else:
+        string = str(value)
+    return string
+
+
+def process_arg(arg):
+    if os.path.exists(arg):
+        if HOST in (UI10, UI20):
+            if arg.startswith("/xrootd/store"):
+                arg = arg.replace("/xrootd/", KISTI_XRD_BASE)
+            elif arg.startswith('~'):
+                arg = os.path.expanduser(arg)
+            else:
+                arg = os.path.abspath(arg)
+        else:
+            raise NotImplementedError
+    return arg
+                
+
+def submit_job(executable, batch_name, arguments, job_dir):
+    '''
+    '''
+    if os.path.exists(job_dir):
+        raise IOError
+    else:
+        os.mkdir(job_dir)
+
+    # Write a jds file.
+    arguments = [process_arg(each) for each in arguments]
+
+    executable = find_executable(executable)
+
+
+    arguments = stringize(arguments)
+
+    jds = generate_jds(
+        executable=executable,
+        arguments=arguments,
+        job_dir=job_dir)
+
+    jds_path = os.path.join(job_dir, "run.jds")
+    with open(jds_path, 'w') as jds_file:
+        jds_file.write(jds)
+
+    # Execute condor_submit
+    cmd = "condor_submit -batch-name {batch_name} {jds_path}".format(
+        batch_name=batch_name,
+        jds_path=jds_path)
+
+    os.system(cmd)
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-e", "--executable", required=True, type=str)
+    parser.add_argument("-a", "--arguments", nargs="+", default=[])
+    parser.add_argument("-b", "--batch-name", type=str)
+    parser.add_argument("-j", "--job-dir", type=str)
+    args = parser.parse_args()
+
+    if args.batch_name is None:
+        name = os.path.basename(args.executable)
+        args.batch_name = os.path.splitext(name)[0]
+
+    if args.job_dir is None:
+        date = datetime.now().strftime("%y%m%d-%H%M%S")
+        job_dir = "job_{name}_{date}".format(name=args.batch_name, date=date)
+        args.job_dir = os.path.join(os.path.curdir, job_dir)
+
+    submit_job(args.executable, args.batch_name, args.arguments, args.job_dir)
+
+
+if __name__ == "__main__":
+    main()
