@@ -97,9 +97,7 @@ def process_arg(arg):
 def submit_job(executable, batch_name, arguments, job_dir):
     '''
     '''
-    if os.path.exists(job_dir):
-        raise IOError
-    else:
+    if not os.path.exists(job_dir):
         os.mkdir(job_dir)
 
     # Write a jds file.
