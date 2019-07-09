@@ -198,7 +198,9 @@ inline LorentzTransverseVector LorentzTransverseVector::operator*(double factor)
 }
 
 inline LorentzTransverseVector LorentzTransverseVector::operator/(double factor) const {  
-  if (factor==0.) throw Mt2Exception("divide by zero error");
+  //if (factor==0.) throw Mt2Exception("divide by zero error");
+  const std::string & reason = "divide by zero error";
+  if (factor==0.) throw(reason);
   return (*this) * (1. / factor);
 }
 
