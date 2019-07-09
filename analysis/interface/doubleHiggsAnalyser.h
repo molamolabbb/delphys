@@ -1,7 +1,7 @@
 #ifndef doubleHiggsAnalyser_H
 #define doubleHiggsAnalyser_H
-#include "delphys/external/src/Mt2/Basic_Mt2_332_Calculator.h"
-#include "delphys/external/src/Mt2/ChengHanBisect_Mt2_332_Calculator.h"
+#include "delphys/external/interface/Basic_Mt2_332_Calculator.h"
+#include "delphys/external/interface/ChengHanBisect_Mt2_332_Calculator.h"
 //#include "TMVA/Tools.h"
 //#include "TMVA/Reader.h"
 //#include "TMVA/DataLoader.h"
