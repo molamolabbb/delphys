@@ -115,6 +115,7 @@ class TopPolarizationAnalyser : private BaseAnalyser {
   // NOTE selection cut
   //////////////////////////////////////////////////////////////////////////////
 
+  // NOTE Object Selection
   Float_t kElectronMinPT_ = 20.0f;
   Float_t kElectronMaxEta_ = 2.4f;
   Float_t kMuonMinPT_ = 20.0f;
@@ -122,9 +123,10 @@ class TopPolarizationAnalyser : private BaseAnalyser {
   Float_t kJetMinPT_ = 30.0f;
   Float_t kJetMaxEta_ = 2.4f;
 
-  // NOTE Object Selection
-
-  // NOTE Offline Selection
+  // NOTE Event Selection
+  UInt_t kMinNumLeptons_ = 2;
+  UInt_t kMinNumJets_ = 2;
+  UInt_t kMinNumBTaggedJets_ = 2;
 
 };
 
