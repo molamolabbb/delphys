@@ -45,20 +45,13 @@ TopPolarizationAnalyser::TopPolarizationAnalyser(const TString & in_path,
   std::cout << "makeBranch end" << std::endl;
 
   TString cutflow_name = "cutflow_" + helicity;
-  if (b_helicity_ == 0) {
-    cutflow_name += "left";
-  } else if (b_helicity_ == 1) {
-    cutflow_name += "right";
-  }
-
-  // cutflow_ = std::make_shared<TH1F>(cutflow_name, cutflow_title, 6, -0.5, 5.5);
   cutflow_ = new TH1F(cutflow_name, cutflow_name, 6, -0.5, 5.5);
   cutflow_->SetDirectory(out_file_);
   auto x_axis = cutflow_->GetXaxis();
   x_axis->SetBinLabel(1, "initial");
   x_axis->SetBinLabel(2, "Is dileptonic");
   x_axis->SetBinLabel(3, "N_{leptons} #ge 2");
-  x_axis->SetBinLabel(4, "leptons OS");
+  x_axis->SetBinLabel(4, "lepton pair opposite sign");
   x_axis->SetBinLabel(5, "N_{jets} #ge 2");
   x_axis->SetBinLabel(6, "N_{b-jets} #ge 2");
 
