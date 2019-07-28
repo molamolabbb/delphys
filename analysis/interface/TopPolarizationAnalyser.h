@@ -67,8 +67,9 @@ class TopPolarizationAnalyser : private BaseAnalyser {
   //////////////////////////////////////////////////////////////////////////////
   // do not reset
   Float_t b_m_; // mass point
-  Float_t b_helicity_;
+  Int_t b_helicity_;
 
+  Int_t b_num_leptons_;
   std::vector<Float_t> b_lep_pt_;
   std::vector<Float_t> b_lep_eta_;
   std::vector<Float_t> b_lep_phi_;
@@ -76,6 +77,8 @@ class TopPolarizationAnalyser : private BaseAnalyser {
   std::vector<Int_t>   b_lep_charge_;
   std::vector<Int_t>   b_lep_type_;
 
+  Int_t b_num_jets_;
+  Int_t b_num_bjets_;
   std::vector<Float_t> b_jet_pt_;
   std::vector<Float_t> b_jet_eta_;
   std::vector<Float_t> b_jet_phi_;

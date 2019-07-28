@@ -52,10 +52,10 @@ TopPolarizationAnalyser::TopPolarizationAnalyser(const TString & in_path,
   auto x_axis = cutflow_->GetXaxis();
   x_axis->SetBinLabel(1, "initial");
   x_axis->SetBinLabel(2, "Is dileptonic");
-  x_axis->SetBinLabel(3, "N_{leptons} #ge 2");
+  x_axis->SetBinLabel(3, "N_{leptons} #geq 2");
   x_axis->SetBinLabel(4, "lepton pair opposite sign");
-  x_axis->SetBinLabel(5, "N_{jets} #ge 2");
-  x_axis->SetBinLabel(6, "N_{b-jets} #ge 2");
+  x_axis->SetBinLabel(5, "N_{jets} #geq 2");
+  x_axis->SetBinLabel(6, "N_{b-jets} #geq 2");
 
   std::cout << "ctor end" << std::endl;
 }
@@ -93,8 +93,9 @@ void TopPolarizationAnalyser::makeBranch() {
   #define BRANCH_ANY(name) out_tree_->Branch(#name, & b_##name##_ );
 
   BRANCH_F(m);
-  BRANCH_F(helicity);
+  BRANCH_I(helicity);
 
+  BRANCH_I(num_leptons);
   BRANCH_VF(lep_pt);
   BRANCH_VF(lep_eta);
   BRANCH_VF(lep_phi);
@@ -102,6 +103,8 @@ void TopPolarizationAnalyser::makeBranch() {
   BRANCH_VI(lep_pid);
   BRANCH_VI(lep_type);
 
+  BRANCH_I(num_jets);
+  BRANCH_I(num_bjets);
   BRANCH_VF(jet_pt);
   BRANCH_VF(jet_eta);
   BRANCH_VF(jet_phi);
@@ -134,7 +137,8 @@ void TopPolarizationAnalyser::makeBranch() {
 
 void TopPolarizationAnalyser::resetBranch() {
   // NOTE do not reset m, helicity
-  
+
+  b_num_leptons_ = -1;  
   b_lep_pt_.clear();
   b_lep_eta_.clear();
   b_lep_phi_.clear();
@@ -142,6 +146,8 @@ void TopPolarizationAnalyser::resetBranch() {
   b_lep_charge_.clear();
   b_lep_type_.clear();
 
+  b_num_jets_ = -1;  
+  b_num_bjets_ = -1;  
   b_jet_pt_.clear();
   b_jet_eta_.clear();
   b_jet_phi_.clear();
@@ -233,7 +239,7 @@ bool TopPolarizationAnalyser::selectJet(const Jet* jet) {
 Bool_t TopPolarizationAnalyser::selectEvent() {
   cutflow_->Fill(0);
 
-  // NOTE 
+  // FIXME currently, it is useless
   if (not isDileptonic()) return false;
   cutflow_->Fill(1);
 
@@ -294,6 +300,7 @@ Bool_t TopPolarizationAnalyser::selectEvent() {
 
 void TopPolarizationAnalyser::analyse() {
   // NOTE leptons
+  b_num_leptons_ = selected_leptons_.size();
   for (const auto & each : selected_leptons_) {
     b_lep_pt_.push_back(each->PT);
     b_lep_eta_.push_back(each->Eta);
@@ -304,6 +311,11 @@ void TopPolarizationAnalyser::analyse() {
   }
 
   // NOTE jets
+  b_num_jets_ = selected_jets_.size();
+  b_num_bjets_ = std::count_if(selected_jets_.begin(), selected_jets_.end(),
+                               [] (const Jet* jet) -> bool {
+                                 return jet->BTag == 1;});
+
   for (const auto & jet : selected_jets_) {
     b_jet_pt_.push_back(jet->PT);
     b_jet_eta_.push_back(jet->Eta);
