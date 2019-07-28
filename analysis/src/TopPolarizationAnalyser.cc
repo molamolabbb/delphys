@@ -56,11 +56,11 @@ TopPolarizationAnalyser::TopPolarizationAnalyser(const TString & in_path,
   cutflow_->SetDirectory(out_file_);
   auto x_axis = cutflow_->GetXaxis();
   x_axis->SetBinLabel(1, "initial");
-  x_axis->SetBinLabel(2, "is dileptonic");
-  x_axis->SetBinLabel(3, "N_{leptons} >= 2");
+  x_axis->SetBinLabel(2, "Is dileptonic");
+  x_axis->SetBinLabel(3, "N_{leptons} #ge 2");
   x_axis->SetBinLabel(4, "leptons OS");
-  x_axis->SetBinLabel(5, "N_{jets} >= 2");
-  x_axis->SetBinLabel(6, "N_{b-jets} >= 2");
+  x_axis->SetBinLabel(5, "N_{jets} #ge 2");
+  x_axis->SetBinLabel(6, "N_{b-jets} #ge 2");
 
   std::cout << "ctor end" << std::endl;
 }
@@ -258,13 +258,11 @@ Bool_t TopPolarizationAnalyser::selectEvent() {
     }
   }
 
-
-
   if (selected_leptons_.size() < 2) return false;
   cutflow_->Fill(2);
 
 
-  // NOTE charge
+  // FIXME seungjin: I think we need to find best two lepton pair. not two first leptons
   if (selected_leptons_[0]->Charge * selected_leptons_[1]->Charge > 0) return false;
   cutflow_->Fill(3);
 
