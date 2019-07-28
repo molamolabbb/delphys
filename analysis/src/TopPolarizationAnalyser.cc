@@ -44,9 +44,11 @@ TopPolarizationAnalyser::TopPolarizationAnalyser(const TString & in_path,
   makeBranch();
   std::cout << "makeBranch end" << std::endl;
 
+  // TODO a function to make a cut-flow histogram
   TString cutflow_name = "cutflow_" + helicity;
   cutflow_ = new TH1F(cutflow_name, cutflow_name, 6, -0.5, 5.5);
   cutflow_->SetDirectory(out_file_);
+
   auto x_axis = cutflow_->GetXaxis();
   x_axis->SetBinLabel(1, "initial");
   x_axis->SetBinLabel(2, "Is dileptonic");
@@ -61,8 +63,8 @@ TopPolarizationAnalyser::TopPolarizationAnalyser(const TString & in_path,
 
 TopPolarizationAnalyser::~TopPolarizationAnalyser() {
   std::cout << "dtor begin" << std::endl;
-  out_tree_->Print();
 
+  out_tree_->Print();
   out_file_->Write();
   out_file_->Close();
 
@@ -70,8 +72,8 @@ TopPolarizationAnalyser::~TopPolarizationAnalyser() {
 }
 
 void TopPolarizationAnalyser::makeBranch() {
-
   resetBranch();
+
   gInterpreter->GenerateDictionary("vector<vector<Int_t> >", "vector"); 
   gInterpreter->GenerateDictionary("vector<vector<Float_t> >", "vector"); 
 
@@ -131,7 +133,7 @@ void TopPolarizationAnalyser::makeBranch() {
 
 
 void TopPolarizationAnalyser::resetBranch() {
-  // CAUTION do not reset m, helicity
+  // NOTE do not reset m, helicity
   
   b_lep_pt_.clear();
   b_lep_eta_.clear();
@@ -186,18 +188,20 @@ bool TopPolarizationAnalyser::isDileptonic() {
     auto gen = dynamic_cast<const GenParticle*>(particles_->At(idx));
 
     Int_t abs_pid = std::abs(gen->PID);
+    // NOTE electron or muon
     if ((abs_pid != 11) and (abs_pid != 13)) continue;
     if (gen->M1 == -1) continue;
 
     auto mother = dynamic_cast<const GenParticle*>(particles_->At(gen->M1));
+    // NOTE W boson
     if (std::abs(mother->PID) != 24) continue;
 
     num_leptons++;
   }
 
-  // FIXME
-  bool is_dileptonic = num_leptons == 2;
-  return is_dileptonic;
+  // bool is_dileptonic = num_leptons == 2;
+  // return is_dileptonic;
+  return num_leptons == 2;
 }
 
 
@@ -242,7 +246,6 @@ Bool_t TopPolarizationAnalyser::selectEvent() {
     }
   }
 
-
   for (Int_t idx = 0; idx < electrons_->GetEntries(); idx++) {
     auto electron = dynamic_cast<const Electron*>(electrons_->At(idx));
     if (selectElectron(electron)) {
@@ -251,12 +254,18 @@ Bool_t TopPolarizationAnalyser::selectEvent() {
     }
   }
 
-  if (selected_leptons_.size() < 2) return false;
+  if (selected_leptons_.size() < kMinNumLeptons_) return false;
   cutflow_->Fill(2);
 
+  std::sort(selected_leptons_.begin(), selected_leptons_.end(),
+            [] (const MyLepton* a, const MyLepton* b) -> bool {
+              return a->PT > b->PT;
+            });
 
-  // FIXME seungjin: I think we need to find best two lepton pair. not two first leptons
-  if (selected_leptons_[0]->Charge * selected_leptons_[1]->Charge > 0) return false;
+  // NOTE
+  if (selected_leptons_[0]->Charge * selected_leptons_[1]->Charge > 0) {
+    return false;
+  }
   cutflow_->Fill(3);
 
   UInt_t num_jets = 0;
@@ -273,14 +282,11 @@ Bool_t TopPolarizationAnalyser::selectEvent() {
     if (jet->BTag) num_bjets++;
   }
 
-
-  if (num_jets < 2) return false;
+  if (num_jets < kMinNumJets_) return false;
   cutflow_->Fill(4);
 
-
-  if (num_bjets < 2) return false;
+  if (num_bjets < kMinNumBTaggedJets_) return false;
   cutflow_->Fill(5);
-
 
   return true;
 }
