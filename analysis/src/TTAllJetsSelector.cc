@@ -16,15 +16,8 @@ TTAllJetsSelector::TTAllJetsSelector(const TString & in_path,
 
   setBranchAddress();
 
-  std::set<Int_t> channel_codes = {
-      0,
-      1, 10, 100,
-      2, 11, 101, 20, 110, 200
-  };
+  bookHistograms();
 
-  for (const auto & each : channel_codes) {
-    decay_channel_count_[each] = 0;
-  }
 
   std::cout << "end ctor" << std::endl;
 }
@@ -32,112 +25,166 @@ TTAllJetsSelector::TTAllJetsSelector(const TString & in_path,
 
 TTAllJetsSelector::~TTAllJetsSelector() {
   std::cout << "dtor" << std::endl;
+  out_file_->Write();
+  out_file_->Close();
+  std::cout << "dtor end" << std::endl;
+}
 
-  Float_t num_events = static_cast<Float_t>(in_tree_->GetEntries());
+void TTAllJetsSelector::bookHistograms() {
+  h_decay_channel_ = new TH1F("decay_channel", "Decay Channel", 3, -0.5, 2.5);
+  TAxis* x_axis = h_decay_channel_->GetXaxis();
+  x_axis->SetBinLabel(1, "all-jets");
+  x_axis->SetBinLabel(2, "lepton+jets");
+  x_axis->SetBinLabel(3, "dilepton");
 
-  for (const auto & each : decay_channel_count_) {
-    switch (each.first) {
-      case 0:
-        std::cout << "All jets";
-        break;
-      case 1:
-        std::cout << "electron + jets";
-        break;
-      case 10:
-        std::cout << "muon + jets";
-        break;
-      case 100:
-        std::cout << "tau + jets";
-        break;
-      case 2:
-        std::cout << "e + e";
-        break;
-      case 11:
-        std::cout << "e + mu";
-        break;
-      case 101:
-        std::cout << "e + tau";
-        break;
-      case 20:
-        std::cout << "mu + mu";
-        break;
-      case 110:
-        std::cout << "mu + tau";
-        break;
-      case 200:
-        std::cout << "tau + tau";
-        break;
-      default:
-        std::cout << ":(";
-    }
+  h_decay_channel_detail_ = new TH1F("decay_channel_detail", "Decay Channel",
+                                     10, -0.5, 9.5);
+  x_axis = h_decay_channel_detail_->GetXaxis();
+  // all-jets
+  x_axis->SetBinLabel(1, "all-jets");
 
-    std::cout << ": " << each.second / num_events << std::endl;
-  }
+  // lepton+jets
+  x_axis->SetBinLabel(2, "#e+jets");
+  x_axis->SetBinLabel(3, "#mu+jets");
+  x_axis->SetBinLabel(4, "#tau+jets");
+
+  // dilepton
+  x_axis->SetBinLabel(5, "e+e");
+  x_axis->SetBinLabel(6, "e+#mu");
+  x_axis->SetBinLabel(7, "e+#tau");
+
+  x_axis->SetBinLabel(8, "#mu+#mu");
+  x_axis->SetBinLabel(9, "#mu+#tau");
+
+  x_axis->SetBinLabel(10, "#tau+#tau");
 
 }
 
 
+Int_t TTAllJetsSelector::checkDecayChannel(const GenParticle* top) {
+  // NOTE if ((std::abs(top->PID) == 6) or (top->Status == 62))
+
+
+  // NOTE D1 - quark / D2 is W boson
+  // auto quark = dynamic_cast<const GenParticle*>(particles_->At(top->D1));
+
+  auto w_boson = dynamic_cast<const GenParticle*>(particles_->At(top->D2));
+
+  while (w_boson->D1 == w_boson->D2) {
+    w_boson = dynamic_cast<const GenParticle*>(particles_->At(w_boson->D1));
+  }
+
+  if (std::abs(w_boson->PID) != 24) {
+    std::cerr << "WRONG PID: " << w_boson->PID << std::endl;
+  }
+
+  // NOTE if W boson decays leptonically, D1 is the neutrino and D2 is the lepton.
+
+  auto dau = dynamic_cast<const GenParticle*>(particles_->At(w_boson->D1));
+  Int_t abs_pid = std::abs(dau->PID);
+
+  Int_t code = -1;
+
+  if      ((abs_pid >= 1)  and (abs_pid <= 5))  code = 0;
+  else if ((abs_pid == 11) or  (abs_pid == 12)) code = 1;
+  else if ((abs_pid == 13) or  (abs_pid == 14)) code = 10;
+  else if ((abs_pid == 15) or  (abs_pid == 16)) code = 100;
+
+  if (code == -1) {
+    std::cerr << "Wrong PID of daughter of W boson: " << dau->PID << std::endl;
+    std::exit(1);
+  }
+
+  return code;
+}
+
+
 Bool_t TTAllJetsSelector::selectEvent() {
-  // Find top quarks
-  std::vector<GenParticle*> top_quarks;
-  for (Int_t idx = 0; idx <= particles_->GetEntries(); idx++) {
-    auto p = dynamic_cast<GenParticle*>(particles_->At(idx));
-    if ((std::abs(p->PID) == pdgid::kTop) and (p->Status == p8status::kTop)) {
-      top_quarks.push_back(p);
-    }
-    if (top_quarks.size() == 2) break;
-  }
+  const GenParticle* top = nullptr;
+  const GenParticle* anti_top = nullptr;
 
-  std::queue<Int_t> daughter_indices;
-  for (const auto & top : top_quarks) {
-    // top daughters
-    for (Int_t dau_idx = top->D1; dau_idx <= top->D2; dau_idx++) {
-      auto dau = dynamic_cast<GenParticle*>(particles_->At(dau_idx));
-      Int_t abs_pid = std::abs(dau->PID);
+  for (Int_t idx = 0; idx < particles_->GetEntries(); idx++) {
+    auto gen = dynamic_cast<const GenParticle*>(particles_->At(idx));
 
-      if (abs_pid == pdgid::kWBoson) {
-        for (Int_t i = dau->D1; i <= dau->D2; i++) {
-          daughter_indices.push(i);
-        }
-      } else if (abs_pid != pdgid::kBottom) {
-        std::cout << top->PID << " --> " << dau->PID << std::endl;
-      } 
-    }
-  }
-
-
-
-
-  Int_t num_electrons = 0, num_muons = 0, num_taus = 0;
-
-  while (daughter_indices.size()) {
-    Int_t idx = daughter_indices.front();
-    daughter_indices.pop();
-    auto p = dynamic_cast<GenParticle*>(particles_->At(idx));
-    Int_t abs_pid = std::abs(p->PID);
-
-    if (abs_pid == pdgid::kElectron) {
-      num_electrons++;
-    } else if (abs_pid == pdgid::kMuon) {
-      num_muons++;
-    } else if (abs_pid == pdgid::kTau) {
-      num_taus++;
-    } else if (std::find(kSkipPID.begin(), kSkipPID.end(), abs_pid) != kSkipPID.end()) {
+    if ((gen->PID == 6) and (gen->Status == p8status::kTop)) {
+      top = gen;
       continue;
-    } else {
-      for (Int_t dau_idx = p->D1; dau_idx <= p->D2; dau_idx++) {
-        daughter_indices.push(dau_idx);
-      }
+    } else if ((gen->PID == -6) and (gen->Status == p8status::kTop)) {
+      anti_top = gen;
+      continue;
     }
-  } // end while loop
- 
 
-  Int_t code = num_electrons + 10 * num_muons + 100 * num_taus;
-  decay_channel_count_[code]++;
+    if ((top != nullptr) and (anti_top != nullptr)) break;
 
-  Bool_t is_all_jets = (code == 0);
+  }
 
-  return is_all_jets;
+  if ((top == nullptr) or (anti_top == nullptr)) {
+    std::cout << "SOMETHING WRONG" << std::endl;
+    std::exit(1);
+  }
+
+  Int_t top_code = checkDecayChannel(top);
+  Int_t anti_top_code = checkDecayChannel(anti_top);
+  Int_t event_code = top_code + anti_top_code;
+
+  switch (event_code) {
+    case 0:
+      // all-jets
+      h_decay_channel_->Fill(0);
+      h_decay_channel_detail_->Fill(0);
+      break;
+    case 1:
+      // e + jets;
+      h_decay_channel_->Fill(1);
+      h_decay_channel_detail_->Fill(1);
+      break;
+    case 10:
+      // mu + jets;
+      h_decay_channel_->Fill(1);
+      h_decay_channel_detail_->Fill(2);
+      break;
+    case 100:
+      // mu + jets;
+      h_decay_channel_->Fill(1);
+      h_decay_channel_detail_->Fill(3);
+      break;
+    case 2:
+      // e + e
+      h_decay_channel_->Fill(2);
+      h_decay_channel_detail_->Fill(4);
+      break;
+    case 11:
+      // e + mu
+      h_decay_channel_->Fill(2);
+      h_decay_channel_detail_->Fill(5);
+      break;
+    case 101:
+      // e + tau
+      h_decay_channel_->Fill(2);
+      h_decay_channel_detail_->Fill(6);
+      break;
+    case 20:
+      // mu + mu
+      h_decay_channel_->Fill(2);
+      h_decay_channel_detail_->Fill(7);
+      break;
+    case 110:
+      // mu + tau
+      h_decay_channel_->Fill(2);
+      h_decay_channel_detail_->Fill(8);
+      break;
+    case 200:
+      // tau + tau
+      h_decay_channel_->Fill(2);
+      h_decay_channel_detail_->Fill(9);
+      break;
+    default:
+      std::cerr << "WRONG EVENT CODE: " << event_code << std::endl;
+      std::exit(1);
+  }
+
+  bool is_alljets = event_code == 0;
+  return is_alljets;
 }
 
 
