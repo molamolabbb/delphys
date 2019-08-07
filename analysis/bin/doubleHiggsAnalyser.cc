@@ -16,8 +16,10 @@
 #include "delphys/external/interface/HiggsnessTopness.h"
 
 #include "classes/DelphesClasses.h"
-#include "/cms/ldap_home/molamolabb/delPhys/src/delphys/oxbridgekinetics/src/Mt2/Basic_Mt2_332_Calculator.h"
-#include "/cms/ldap_home/molamolabb/delPhys/src/delphys/oxbridgekinetics/src/Mt2/ChengHanBisect_Mt2_332_Calculator.h"
+#include "delphys/external/interface/lester_mt2_bisect.h"
+#include "delphys/external/interface/Basic_Mt2_332_Calculator.h"
+#include "delphys/external/interface/ChengHanBisect_Mt2_332_Calculator.h"
+
 using namespace std;
 
 // return mother particle(GenParticle) of particle 'p' among 'particles'.
@@ -397,7 +399,6 @@ bool doubleHiggsAnalyser::Analysis(){
     //          missing.M(),missing.M());
     basic_MT2_332_l = basic_mt2_332Calculator.mt2_332(vis_A_l, vis_B_l, pT_Miss_l, missing.M());
     ch_bisect_MT2_332_l = ch_bisect_mt2_332Calculator.mt2_332(vis_A_l, vis_B_l, pT_Miss_l, missing.M());
-    
     //tmva_bdtg_output = bdtg_reader->EvaluateMVA("BDTG");
     return true;
 }
