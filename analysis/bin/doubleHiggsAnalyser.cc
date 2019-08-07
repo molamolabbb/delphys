@@ -16,10 +16,8 @@
 #include "delphys/external/interface/HiggsnessTopness.h"
 
 #include "classes/DelphesClasses.h"
-#include "delphys/external/interface/lester_mt2_bisect.h"
-#include "delphys/external/src/Mt2/Basic_Mt2_332_Calculator.h"
-#include "delphys/external/src/Mt2/ChengHanBisect_Mt2_332_Calculator.h"
-
+#include "/cms/ldap_home/molamolabb/delPhys/src/delphys/oxbridgekinetics/src/Mt2/Basic_Mt2_332_Calculator.h"
+#include "/cms/ldap_home/molamolabb/delPhys/src/delphys/oxbridgekinetics/src/Mt2/ChengHanBisect_Mt2_332_Calculator.h"
 using namespace std;
 
 // return mother particle(GenParticle) of particle 'p' among 'particles'.
@@ -124,6 +122,9 @@ void doubleHiggsAnalyser::SetTMVA(TString weight_file_path) {
   bdtg_reader->AddVariable("bbll_deltaPhi", &bbll_deltaPhi);
   bdtg_reader->AddVariable("mT", &mT);
   bdtg_reader->AddVariable("basic_MT2_332_bbll", &basic_MT2_332_bbll);
+  bdtg_reader->AddVariable("topness",&topness);
+  bdtg_reader->AddVariable("higgsness",&higgsness);
+  
   bdtg_reader->BookMVA("BDTG", weight_file_path);
 }
 */
@@ -195,7 +196,7 @@ void doubleHiggsAnalyser::ResetVariables() {
   bottoms.clear();
 }
 
-bool doubleHiggsAnalyser::Analysis() {
+bool doubleHiggsAnalyser::Analysis(){
     doubleHiggsAnalyser::ResetVariables();
   //map<Float_t, int, greater<Float_t>> leptons : map of <pt,index>:<K,V> of muon sorted by pt.
   //base selections : MissingET > 20, pT(lepton) > 20, deltaR(ll) < 1.0, m(ll) < 65, deltaR(bb) < 1.3, 95 < m(bb) < 140
@@ -219,17 +220,26 @@ bool doubleHiggsAnalyser::Analysis() {
       if (fabs(e->Eta) > 2.4 || fabs(e->PT) < 10) continue;
       leptons.insert(make_pair(e->PT,make_pair(doubleHiggsAnalyser::Electron_PID*e->Charge,ie)));
     }
-    //for (int ip = 0; ip < particles->GetEntries(); ip++){
-    //  auto p = static_cast<const GenParticle *>(particles->At(ip));
-    //  // if (abs(p->PID)!=doubleHiggsAnalyser::Tau_PID)
-    //  if (abs(p->PID)!=doubleHiggsAnalyser::Electron_PID && abs(p->PID)!=doubleHiggsAnalyser::Muon_PID) continue;
-    //  if (fabs(p->Eta) > 2.4 || fabs(p->PT) < 20) continue;
-    //  leptons.insert(make_pair(p->PT,ip));
+    // tau
+    //for (int it = 0; it < taus->GetEntries(); it++){
+    //  auto t = static_cast<const Tau *>(taus->At(it));
+    //  if (fab(e->Eta)> 2.4 || fabs(e->PT) < 10) continue;
+    //  leptons.insert(make_pair(t->PT,make_pair(doubleHiggsAnalyser::Tau_PID*t->Charge,ie)));
     //}
-
+    
+    for (int ip = 0; ip < particles->GetEntries(); ip++){
+      auto p = static_cast<const GenParticle *>(particles->At(ip));
+      //if (abs(p->PID)!=doubleHiggsAnalyser::Tau_PID);
+      if (abs(p->PID)!=doubleHiggsAnalyser::Electron_PID && abs(p->PID)!=doubleHiggsAnalyser::Muon_PID) continue;
+      if (fabs(p->Eta) > 2.4 || fabs(p->PT) < 20) continue;
+      leptons.insert(make_pair(p->PT,make_pair(doubleHiggsAnalyser::Tau_PID*p->Charge,ip)));
+      if (p->Status < 20) return false;
+    }
+    
     if (leptons.size()<2) {
       return false;
     }
+    
     
     lepton_iter = leptons.begin();
     auto l1_info = lepton_iter->second;
@@ -240,27 +250,39 @@ bool doubleHiggsAnalyser::Analysis() {
     int pid2 = l2_info.first;
     int index_l2 = l2_info.second;
     lepton_iter++;
-    while (pid1*pid2 > 0 && (lepton_iter!=leptons.end())){
+    
+    while (pid1*pid2 > 0 && (fabs(pid1)!=fabs(pid2)) && (lepton_iter!=leptons.end())){
       l2_info = lepton_iter->second;
       pid2 = l2_info.first;
       index_l2 = l2_info.second;
       lepton_iter++;
     }
+    
     if (pid1*pid2 > 0) return false;
     if (abs(pid1)==doubleHiggsAnalyser::Electron_PID){
       auto lep1 = static_cast<const Electron *>(electrons->At(index_l1));
       lepton1.SetPtEtaPhiM(lep1->PT,lep1->Eta,lep1->Phi,doubleHiggsAnalyser::Electron_Mass);
-    } else {
+    }
+    else if (abs(pid1)==doubleHiggsAnalyser::Muon_PID){
       auto lep1 = static_cast<const Muon *>(muons->At(index_l1));
       lepton1.SetPtEtaPhiM(lep1->PT,lep1->Eta,lep1->Phi,doubleHiggsAnalyser::Muon_Mass);
     }
+    else{
+      auto lep1 = static_cast<const GenParticle *>(particles->At(index_l1));
+      lepton1.SetPtEtaPhiM(lep1->PT,lep1->Eta,lep1->Phi,lep1->Mass);
+    } 
     if (abs(pid2)==doubleHiggsAnalyser::Electron_PID){
       auto lep2 = static_cast<const Electron *>(electrons->At(index_l2));
       lepton2.SetPtEtaPhiM(lep2->PT,lep2->Eta,lep2->Phi,doubleHiggsAnalyser::Electron_Mass);
-    } else {
+    } 
+    else if (abs(pid2)==doubleHiggsAnalyser::Muon_PID) {
       auto lep2 = static_cast<const Muon *>(muons->At(index_l2));
       lepton2.SetPtEtaPhiM(lep2->PT,lep2->Eta,lep2->Phi,doubleHiggsAnalyser::Muon_Mass);
     }
+    else{
+      auto lep2 = static_cast<const GenParticle *>(particles->At(index_l2));
+      lepton2.SetPtEtaPhiM(lep2->PT,lep2->Eta,lep2->Phi,lep2->Mass);
+    } 
     //auto lep1 = static_cast<const GenParticle *>(particles->At(lepton_iter->second));
     //lepton1.SetPtEtaPhiM(lep1->PT,lep1->Eta,lep1->Phi,lep1->Mass);
     //auto lepton1_pdg = isFrom(particles, lepton_iter->second); // lepton truth matching
@@ -283,10 +305,11 @@ bool doubleHiggsAnalyser::Analysis() {
       if (abs(jet->Flavor) != doubleHiggsAnalyser::Bottom_PID || fabs(jet->PT) < 30 || fabs(jet->Eta) > 2.4) continue;
       bottoms.insert(make_pair(jet->PT,ij));
     }
-   
+    
     if (bottoms.size()<2) {
       return false;
     }
+    
     bottom_iter = bottoms.begin();
     auto bot1 = static_cast<const Jet *>(jets->At(bottom_iter->second));
     bottom1.SetPtEtaPhiM(bot1->PT,bot1->Eta,bot1->Phi,bot1->Mass);
@@ -326,6 +349,7 @@ bool doubleHiggsAnalyser::Analysis() {
     if (bb_deltaR > 5) {return true;} step++; // pre-MVA selection 3
     if (bottombottom.M() < 22) {return true;} step++; // pre-MVA selection 4
 
+    
     // get TLorentzVector to the global variable for Minuit
     g_missing = missing;
     g_lepton1 = lepton1; g_lepton2 = lepton2;
@@ -410,31 +434,42 @@ void doubleHiggsAnalyser::Finalize() {
 
 int main(Int_t argc,Char_t** argv)
 {
-  //TFile *f = TFile::Open("/cms/scratch/jlee/hh/hh_1.root");
-  //TTree *tree;
-  //f->GetObject("Delphes", tree);
+  string sample_list[] = {"pp_hh","pp_llbj","pp_tatabb","pp_tt","pp_tt_ditau","pp_tt_leptau","pp_tth","pp_ttv","pp_twj"} ;
+  int numofSample[] = {6,2,11,3,2,1,3,1,3};
+  // single
+  /*
   TChain *tree = new TChain("Delphes");
   TString output_name;
-  TString weight_file_path = "/home/sunyoung/delPhys/src/delphys/analysis/bin/weights/DoubleHiggs_BDTG.weights.xml";
-  //tree->Add("/xrootd_UOS/store/user/jlee/GluGluToHHTo2B2VTo2L2Nu_node_6_13TeV-madgraph-v2/delphes/*.root"); // ui
-  //tree->Add("/xrootd_UOS/store/user/jlee/GluGluToHHTo2B2VTo2L2Nu_node_6_13TeV-madgraph-v2/delphes/*.root"); // B6 higgs
-  //tree->Add("/xrootd_UOS/store/user/jlee/GluGluToHHTo2B2VTo2L2Nu_node_11_13TeV-madgraph-v2/delphes/*.root"); // B11 higgs
-  //tree->Add("/xrootd_UOS/store/user/jlee/GluGluToHHTo2B2VTo2L2Nu_node_sm_13TeV-madgraph-v2/delphes/*.root"); // SM higgs
-  for (int i = 1; i<200; i++){
-  std::string filename = "/xrootd_UOS/store/user/sunyoung/delphes/TT_"+std::to_string(i)+".root";
-  tree->Add(filename.c_str());
+  for (int i=1; i < 3; i++){
+    std::string filename = "/xrootd_user/molamolabb/xrootd/doubleHiggs/sample/pp_jjllnn/"+std::to_string(i)+".root";
+    tree->Add(filename.c_str());
   }
-  //output_name = "HH_B6.root";
-  //output_name = "HH_B11.root";
-  //output_name = "HH_SM.root";
-  output_name = "TT_200.root";
-    
+  output_name = "output_analyser/190802/pp_jjllnn.root";
   tree->SetBranchStatus("*",true);
+  doubleHiggsAnalyser ana(tree,true);
+  ana.Initiate(output_name);
+  ana.Loop();
+  ana.Finalize();
+
+ */ 
+  for (int j=0; j<9;j++){
+    TChain *tree = new TChain("Delphes");
+    TString output_name;
+  //TString weight_file_path = "/home/molamolabb/delPhys/src/delphys/analysis/test/hh/dataset_HH_SM.root/weights/DoubleHiggs_BDTG.weights.xml";
+ 
+    for (int i = 1; i< numofSample[j]+1; i++){
+    std::string filename = "/xrootd_user/molamolabb/xrootd/doubleHiggs/sample/"+sample_list[j]+"/"+std::to_string(i)+".root";
+    tree->Add(filename.c_str());
+    }
+  
+    output_name = "output_analyser/190805/"+sample_list[j]+".root";
+    tree->SetBranchStatus("*",true);
     
-  doubleHiggsAnalyser ana(tree, true);
-  ana.Initiate(output_name); // usage : Initiate("outputfilename.root")
-  //ana.SetTMVA(weight_file_path);
-  ana.Loop(); // Loop through the events and do doubleHIggsAnalyser::Analysis() per event.
-  ana.Finalize(); // Write the tree and Close the file.
+    doubleHiggsAnalyser ana(tree, true);
+    ana.Initiate(output_name); // usage : Initiate("outputfilename.root")
+    //ana.SetTMVA(weight_file_path);
+    ana.Loop(); // Loop through the events and do doubleHIggsAnalyser::Analysis() per event.
+    ana.Finalize(); // Write the tree and Close the file.
+  }
   return 0;
 }
