@@ -107,7 +107,6 @@ public :
   static const int Tau_PID = 15;
   static constexpr float Muon_Mass = 105.6583745; // MeV
   static constexpr float Electron_Mass = 0.5109989461; // MeV
-
   // before loop settings
   void MakeOutputBranch(TTree *tree);
   void SetOutput(TString output_file_name);
