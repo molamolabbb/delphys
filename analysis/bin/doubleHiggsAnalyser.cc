@@ -223,12 +223,6 @@ bool doubleHiggsAnalyser::Analysis(){
       leptons.insert(make_pair(e->PT,make_pair(doubleHiggsAnalyser::Electron_PID*e->Charge,ie)));
     }
     // tau
-    //for (int it = 0; it < taus->GetEntries(); it++){
-    //  auto t = static_cast<const Tau *>(taus->At(it));
-    //  if (fab(e->Eta)> 2.4 || fabs(e->PT) < 10) continue;
-    //  leptons.insert(make_pair(t->PT,make_pair(doubleHiggsAnalyser::Tau_PID*t->Charge,ie)));
-    //}
-    
     for (int ip = 0; ip < particles->GetEntries(); ip++){
       auto p = static_cast<const GenParticle *>(particles->At(ip));
       //if (abs(p->PID)!=doubleHiggsAnalyser::Tau_PID);
@@ -238,10 +232,9 @@ bool doubleHiggsAnalyser::Analysis(){
       if (p->Status < 20) return false;
     }
     
-    if (leptons.size()<2) {
+    if (leptons.size()!=2) {
       return false;
     }
-    
     
     lepton_iter = leptons.begin();
     auto l1_info = lepton_iter->second;
@@ -308,7 +301,7 @@ bool doubleHiggsAnalyser::Analysis(){
       bottoms.insert(make_pair(jet->PT,ij));
     }
     
-    if (bottoms.size()<2) {
+    if (bottoms.size()!=2) {
       return false;
     }
     
