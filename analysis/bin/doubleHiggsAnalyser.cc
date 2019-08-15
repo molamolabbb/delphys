@@ -208,19 +208,24 @@ bool doubleHiggsAnalyser::Analysis(){
     missing.SetPtEtaPhiM(m->MET,0,m->Phi,0);
     // missing_et baseline selection
     if (missing.E()<20) {return false;}
-    
+
+    // GenParticle     
     // collet leptons
-    // muons
-    for (int im = 0; im < muons->GetEntries(); im++){
-      auto m = static_cast<const Muon *>(muons->At(im));
-      if (fabs(m->Eta) > 2.4 || fabs(m->PT) < 10) continue;
-      leptons.insert(make_pair(m->PT,make_pair(doubleHiggsAnalyser::Muon_PID*m->Charge,im)));
+    // Electrons
+    for (int ip = 0; ip < particles->GetEntries(); ip++){
+      auto p = static_cast<const GenParticle *>(particles->At(ip));
+      if (abs(p->PID)==doubleHiggsAnalyser::Electron_PID) continue;
+      if (fabs(p->Eta) > 2.4 || fabs(p->PT) < 20) continue;
+      leptons.insert(make_pair(p->PT,make_pair(doubleHiggsAnalyser::Electron_PID*p->Charge,ip)));
+      if (p->Status < 20) return false;
     }
-    // electrons
-    for (int ie = 0; ie < electrons->GetEntries(); ie++){
-      auto e = static_cast<const Electron *>(electrons->At(ie));
-      if (fabs(e->Eta) > 2.4 || fabs(e->PT) < 10) continue;
-      leptons.insert(make_pair(e->PT,make_pair(doubleHiggsAnalyser::Electron_PID*e->Charge,ie)));
+    // muons
+    for (int ip = 0; ip < particles->GetEntries(); ip++){
+      auto p = static_cast<const GenParticle *>(particles->At(ip));
+      if (abs(p->PID)==doubleHiggsAnalyser::Muon_PID) continue;
+      if (fabs(p->Eta) > 2.4 || fabs(p->PT) < 20) continue;
+      leptons.insert(make_pair(p->PT,make_pair(doubleHiggsAnalyser::Muon_PID*p->Charge,ip)));
+      if (p->Status < 20) return false;
     }
     // tau
     for (int ip = 0; ip < particles->GetEntries(); ip++){
