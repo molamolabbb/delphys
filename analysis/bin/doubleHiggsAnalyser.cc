@@ -214,7 +214,7 @@ bool doubleHiggsAnalyser::Analysis(){
     // Electrons
     for (int ip = 0; ip < particles->GetEntries(); ip++){
       auto p = static_cast<const GenParticle *>(particles->At(ip));
-      if (abs(p->PID)==doubleHiggsAnalyser::Electron_PID) continue;
+      if (abs(p->PID)!=doubleHiggsAnalyser::Electron_PID) continue;
       if (fabs(p->Eta) > 2.4 || fabs(p->PT) < 20) continue;
       leptons.insert(make_pair(p->PT,make_pair(doubleHiggsAnalyser::Electron_PID*p->Charge,ip)));
       if (p->Status < 20) return false;
@@ -222,7 +222,7 @@ bool doubleHiggsAnalyser::Analysis(){
     // muons
     for (int ip = 0; ip < particles->GetEntries(); ip++){
       auto p = static_cast<const GenParticle *>(particles->At(ip));
-      if (abs(p->PID)==doubleHiggsAnalyser::Muon_PID) continue;
+      if (abs(p->PID)!=doubleHiggsAnalyser::Muon_PID) continue;
       if (fabs(p->Eta) > 2.4 || fabs(p->PT) < 20) continue;
       leptons.insert(make_pair(p->PT,make_pair(doubleHiggsAnalyser::Muon_PID*p->Charge,ip)));
       if (p->Status < 20) return false;
@@ -230,8 +230,8 @@ bool doubleHiggsAnalyser::Analysis(){
     // tau
     for (int ip = 0; ip < particles->GetEntries(); ip++){
       auto p = static_cast<const GenParticle *>(particles->At(ip));
-      //if (abs(p->PID)!=doubleHiggsAnalyser::Tau_PID);
-      if (abs(p->PID)!=doubleHiggsAnalyser::Electron_PID && abs(p->PID)!=doubleHiggsAnalyser::Muon_PID) continue;
+      if (abs(p->PID)!=doubleHiggsAnalyser::Tau_PID) continue;
+      //if (abs(p->PID)!=doubleHiggsAnalyser::Electron_PID && abs(p->PID)!=doubleHiggsAnalyser::Muon_PID) continue;
       if (fabs(p->Eta) > 2.4 || fabs(p->PT) < 20) continue;
       leptons.insert(make_pair(p->PT,make_pair(doubleHiggsAnalyser::Tau_PID*p->Charge,ip)));
       if (p->Status < 20) return false;
