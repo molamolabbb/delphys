@@ -223,12 +223,6 @@ bool doubleHiggsAnalyser::Analysis(){
       leptons.insert(make_pair(e->PT,make_pair(doubleHiggsAnalyser::Electron_PID*e->Charge,ie)));
     }
     // tau
-    //for (int it = 0; it < taus->GetEntries(); it++){
-    //  auto t = static_cast<const Tau *>(taus->At(it));
-    //  if (fab(e->Eta)> 2.4 || fabs(e->PT) < 10) continue;
-    //  leptons.insert(make_pair(t->PT,make_pair(doubleHiggsAnalyser::Tau_PID*t->Charge,ie)));
-    //}
-    
     for (int ip = 0; ip < particles->GetEntries(); ip++){
       auto p = static_cast<const GenParticle *>(particles->At(ip));
       //if (abs(p->PID)!=doubleHiggsAnalyser::Tau_PID);
@@ -238,10 +232,9 @@ bool doubleHiggsAnalyser::Analysis(){
       if (p->Status < 20) return false;
     }
     
-    if (leptons.size()<2) {
+    if (leptons.size()!=2) {
       return false;
     }
-    
     
     lepton_iter = leptons.begin();
     auto l1_info = lepton_iter->second;
@@ -308,7 +301,7 @@ bool doubleHiggsAnalyser::Analysis(){
       bottoms.insert(make_pair(jet->PT,ij));
     }
     
-    if (bottoms.size()<2) {
+    if (bottoms.size()!=2) {
       return false;
     }
     
@@ -434,43 +427,21 @@ void doubleHiggsAnalyser::Finalize() {
 
 
 int main(Int_t argc,Char_t** argv)
-{
-  string sample_list[] = {"pp_hh","pp_llbj","pp_tatabb","pp_tt","pp_tt_ditau","pp_tt_leptau","pp_tth","pp_ttv","pp_twj"} ;
-  int numofSample[] = {6,2,11,3,2,1,3,1,3};
-  // single
-  /*
-  TChain *tree = new TChain("Delphes");
+{ 
+ //TChain *tree = new TChain("Delphes");
+  TString input_name = std::string(argv[0]);
+  TFile *f = TFile::Open(input_name,"read");
+  cout << input_name << endl;
+  TTree *tree;
+  f->GetObject("Events",tree);
   TString output_name;
-  for (int i=1; i < 3; i++){
-    std::string filename = "/xrootd_user/molamolabb/xrootd/doubleHiggs/sample/pp_jjllnn/"+std::to_string(i)+".root";
-    tree->Add(filename.c_str());
-  }
-  output_name = "output_analyser/190802/pp_jjllnn.root";
+  output_name = std::string(argv[1]);
+  cout << output_name << endl;
   tree->SetBranchStatus("*",true);
   doubleHiggsAnalyser ana(tree,true);
   ana.Initiate(output_name);
   ana.Loop();
   ana.Finalize();
 
- */ 
-  for (int j=0; j<9;j++){
-    TChain *tree = new TChain("Delphes");
-    TString output_name;
-  //TString weight_file_path = "/home/molamolabb/delPhys/src/delphys/analysis/test/hh/dataset_HH_SM.root/weights/DoubleHiggs_BDTG.weights.xml";
- 
-    for (int i = 1; i< numofSample[j]+1; i++){
-    std::string filename = "/xrootd_user/molamolabb/xrootd/doubleHiggs/sample/"+sample_list[j]+"/"+std::to_string(i)+".root";
-    tree->Add(filename.c_str());
-    }
-  
-    output_name = "output_analyser/190805/"+sample_list[j]+".root";
-    tree->SetBranchStatus("*",true);
-    
-    doubleHiggsAnalyser ana(tree, true);
-    ana.Initiate(output_name); // usage : Initiate("outputfilename.root")
-    //ana.SetTMVA(weight_file_path);
-    ana.Loop(); // Loop through the events and do doubleHIggsAnalyser::Analysis() per event.
-    ana.Finalize(); // Write the tree and Close the file.
-  }
   return 0;
 }
