@@ -11,7 +11,10 @@
 #include <TLorentzVector.h>
 #include "TMinuit.h"
 #include "TError.h"
-
+#include <iostream>
+#include <cstdlib>
+#include <time.h>
+#include <sys/stat.h>
 #include "delphys/analysis/interface/doubleHiggsAnalyser.h"
 #include "delphys/external/interface/HiggsnessTopness.h"
 
@@ -435,6 +438,13 @@ int main(Int_t argc,Char_t** argv)
   ana.Finalize();
 
  */ 
+  struct tm* datetime;
+  time_t t;
+  t = time(NULL);
+  datetime = localtime(&t);
+  TString output_path = "output_analyser/"+std::to_string(datetime->tm_year+1900)+std::to_string(datetime->tm_mon+1)+std::to_string(datetime->tm_mday);
+  mkdir(output_path,0777);
+
   for (int j=0; j<9;j++){
     TChain *tree = new TChain("Delphes");
     TString output_name;
@@ -444,8 +454,8 @@ int main(Int_t argc,Char_t** argv)
     std::string filename = "/xrootd_user/molamolabb/xrootd/doubleHiggs/sample/"+sample_list[j]+"/"+std::to_string(i)+".root";
     tree->Add(filename.c_str());
     }
-  
-    output_name = "output_analyser/190805/"+sample_list[j]+".root";
+        
+    output_name = "output_analyser/"+std::to_string(datetime->tm_year+1900)+std::to_string(datetime->tm_mon+1)+std::to_string(datetime->tm_mday)+"/"+sample_list[j]+".root";
     tree->SetBranchStatus("*",true);
     
     doubleHiggsAnalyser ana(tree, true);
