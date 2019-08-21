@@ -230,6 +230,7 @@ bool doubleHiggsAnalyser::Analysis(){
       leptons.insert(make_pair(p->PT,make_pair(doubleHiggsAnalyser::Muon_PID*p->Charge,ip)));
       //if (p->Status < 20) return false;
     }
+    /*
     // tau
     for (int ip = 0; ip < particles->GetEntries(); ip++){
       auto p = static_cast<const GenParticle *>(particles->At(ip));
@@ -239,7 +240,7 @@ bool doubleHiggsAnalyser::Analysis(){
       leptons.insert(make_pair(p->PT,make_pair(doubleHiggsAnalyser::Tau_PID*p->Charge,ip)));
       //if (p->Status < 20) return false;
     }
-    
+    */
     if (leptons.size()!=2) {
       return false;
     }
