@@ -222,6 +222,7 @@ bool doubleHiggsAnalyser::Analysis(){
       if (fabs(e->Eta) > 2.4 || fabs(e->PT) < 10) continue;
       leptons.insert(make_pair(e->PT,make_pair(doubleHiggsAnalyser::Electron_PID*e->Charge,ie)));
     }
+    /*
     // tau
     for (int ip = 0; ip < particles->GetEntries(); ip++){
       auto p = static_cast<const GenParticle *>(particles->At(ip));
@@ -231,7 +232,7 @@ bool doubleHiggsAnalyser::Analysis(){
       leptons.insert(make_pair(p->PT,make_pair(doubleHiggsAnalyser::Tau_PID*p->Charge,ip)));
       if (p->Status < 20) return false;
     }
-    
+    */
     if (leptons.size()!=2) {
       return false;
     }
@@ -262,10 +263,11 @@ bool doubleHiggsAnalyser::Analysis(){
       auto lep1 = static_cast<const Muon *>(muons->At(index_l1));
       lepton1.SetPtEtaPhiM(lep1->PT,lep1->Eta,lep1->Phi,doubleHiggsAnalyser::Muon_Mass);
     }
+    /*
     else{
       auto lep1 = static_cast<const GenParticle *>(particles->At(index_l1));
       lepton1.SetPtEtaPhiM(lep1->PT,lep1->Eta,lep1->Phi,lep1->Mass);
-    } 
+    } */
     if (abs(pid2)==doubleHiggsAnalyser::Electron_PID){
       auto lep2 = static_cast<const Electron *>(electrons->At(index_l2));
       lepton2.SetPtEtaPhiM(lep2->PT,lep2->Eta,lep2->Phi,doubleHiggsAnalyser::Electron_Mass);
@@ -274,10 +276,12 @@ bool doubleHiggsAnalyser::Analysis(){
       auto lep2 = static_cast<const Muon *>(muons->At(index_l2));
       lepton2.SetPtEtaPhiM(lep2->PT,lep2->Eta,lep2->Phi,doubleHiggsAnalyser::Muon_Mass);
     }
+    /*
     else{
       auto lep2 = static_cast<const GenParticle *>(particles->At(index_l2));
       lepton2.SetPtEtaPhiM(lep2->PT,lep2->Eta,lep2->Phi,lep2->Mass);
     } 
+    */
     //auto lep1 = static_cast<const GenParticle *>(particles->At(lepton_iter->second));
     //lepton1.SetPtEtaPhiM(lep1->PT,lep1->Eta,lep1->Phi,lep1->Mass);
     //auto lepton1_pdg = isFrom(particles, lepton_iter->second); // lepton truth matching
