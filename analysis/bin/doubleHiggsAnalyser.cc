@@ -433,7 +433,7 @@ void doubleHiggsAnalyser::Finalize() {
 int main(Int_t argc,Char_t** argv)
 {
   string sample_list[] = {"pp_hh","pp_llbj","pp_tatabb","pp_tt","pp_tt_ditau","pp_tt_leptau","pp_tth","pp_ttv","pp_twj"} ;
-  int numofSample[] = {6,2,11,3,2,1,3,1,3};
+  int numofSample[] = {24,7,20,8,2,8,10,7,3};
   // single
   /*
   TChain *tree = new TChain("Delphes");
