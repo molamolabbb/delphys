@@ -3,6 +3,8 @@
 
 #include "delphys/analysis/interface/BaseAnalyser.h"
 
+#include "TH1F.h"
+
 namespace pdgid {
   static const Int_t kBottom = 5;
   static const Int_t kTop = 6;
@@ -12,12 +14,6 @@ namespace pdgid {
   static const Int_t kPhoton = 22;
   static const Int_t kWBoson = 24;
 } // pdgid
-
-static const std::set<Int_t> kSkipPID = {
-    1, 2, 3, 4, 5, // quarks
-    12, 14, 16 // neutrinos
-};
-
 
 namespace p8status {
   static const Int_t kTop = 62;
@@ -32,12 +28,15 @@ class TTAllJetsSelector : private BaseAnalyser {
   void loop();
 
  private:
+  Int_t checkDecayChannel(const GenParticle* top);
+
   Bool_t selectEvent();
   void analyse();
 
-  Bool_t isAllJetsChannel();
+  void bookHistograms();
 
-  std::map<Int_t, Int_t> decay_channel_count_;
+  TH1F* h_decay_channel_;
+  TH1F* h_decay_channel_detail_;
 
 };
 
