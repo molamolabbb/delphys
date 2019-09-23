@@ -8,17 +8,14 @@ elif len(sys.argv) == 3 :
     data_name = sys.argv[1:][0]
     txt_name = sys.argv[1:][1]
 
-_JDS_FMT = """executable = /cms/ldap_home/yyoun/delPhys/bin/slc6_amd64_gcc630/analyseDeepCMeson
+_JDS_FMT = """executable = /cms/ldap_home/molamolabb/delPhys/bin/slc6_amd64_gcc630/analyseDeepCMeson
 universe   = vanilla
 
 arguments = {in_path} {out_path} 
 
 log = condor.log
 
-requirements = ( HasSingularity == true )
 accounting_group=group_cms
-+SingularityImage = "/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-el6:latest"
-+SingularityBind = "/cvmfs, /cms, /share"
 
 getenv     = True
 should_transfer_files = YES
@@ -29,7 +26,7 @@ queue"""
 
 def main():
     print data_name, txt_name
-    out_dir = 'root://cms-xrdr.private.lo:2094///xrd/store/user/yyoun/DeepCMeson/2-Analyser/'+data_name
+    out_dir = 'root://cms-xrdr.private.lo:2094///xrd/store/user/jua/deepcmeson/2-Analyser/'+data_name
     log_dir = './log/{}'.format(data_name)
     #Make out dir 
     if not os.path.isdir(log_dir):
@@ -56,3 +53,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+#requirements = ( HasSingularity == true )
+#+SingularityImage = "/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-el6:latest"
+#+SingularityBind = "/cvmfs, /cms, /share"

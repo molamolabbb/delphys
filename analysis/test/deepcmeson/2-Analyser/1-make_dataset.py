@@ -8,7 +8,7 @@ f = open(filename , "w")
 a = []
 pathlist=  [
             #"/xrootd/store/user/seyang/DeepCMeson/1-Delphes/"            
-            "/xrootd/store/user/seyang/TTvsQCD/1-Delphes/TTJets_aMC"            
+            "/xrootd/store/user/seyang/TTvsQCD/ip_btag/1-delphes/TTJets_aMC"            
 ]   
 for path in pathlist:
     temp = os.listdir(path)
