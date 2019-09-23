@@ -67,6 +67,8 @@ void DeepCMesonAnalyser::resetOnEachJet() {
     kaon_rec_p4_.SetPtEtaPhiM(0,0,0,0);
     d0_gen_p4_.SetPtEtaPhiM(0,0,0,0);
     d0_rec_p4_.SetPtEtaPhiM(0,0,0,0);
+    d0_gen_.SetPtEtaPhiM(0,0,0,0);
+    d0_rec_.SetPtEtaPhiM(0,0,0,0);
     
     track_deta_.clear();
     track_dphi_.clear();
@@ -151,7 +153,6 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
 
                 track_charge_.push_back(track->Charge);
                 track_pId_.push_back(track->PID);
-                track_pId_.push_back(track->PID);
                 track_l_.push_back(track->L);
                 
                 if (abs(track->PID) == 11) {
@@ -207,6 +208,12 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
                 pion_Idx.push_back(i);
             }
         }
+        
+        // reset all dau label.
+        replace(dau_label_.begin(), dau_label_.end(), 1, 0);
+        replace(dau_label_.begin(), dau_label_.end(), 2, 0);
+        replace(dau_label_.begin(), dau_label_.end(), -1, 0);
+        
         Int_t kaon_size = kaon_Idx.size(); 
         Int_t pion_size = pion_Idx.size(); 
         
@@ -214,6 +221,7 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
         jet_label_ = 0;
         if ( (jet_count_d0dau_ >=2) and (jet_count_pion_>=1) and (jet_count_kaon_>=1) ){
             jet_label_ = 1;
+            
             for (Int_t i=0; i<kaon_size; i++){
                 Int_t knum = kaon_Idx[i]; 
 
@@ -225,48 +233,46 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
                     if (gen_charge_[knum]*gen_charge_[pnum] >0) continue;
                         jet_label_=2;
                         
-                        Int_t mnum = mother_num_[knum];
-                        Int_t n_mnum = 0;
+                        //Int_t mnum = mother_num_[knum];
+                        //Int_t n_mnum = 0;
+                        //
+                        //for (Int_t k=0; k<size; k++){
+                        //    if ((mnum == mother_num_[k]) and (abs(mother_pId_[k]) == 421)){
+                        //        n_mnum = n_mnum+ 1;
+                        //    }
+                        //}
+                        //
+                        //if ( n_mnum == 2 ){
+                        //    jet_label_=3;
+
+                        kaon_rec_p4_.SetPtEtaPhiM(track_pt_[knum],track_eta_[knum],track_phi_[knum],gen_mass_[knum]);
+                        pion_rec_p4_.SetPtEtaPhiM(track_pt_[pnum],track_eta_[pnum],track_phi_[pnum],gen_mass_[pnum]);
+                        d0_rec_p4_ = kaon_rec_p4_+pion_rec_p4_;
                         
-                        for (Int_t k=0; k<size; k++){
-                            if ((mnum == mother_num_[k]) and (abs(mother_pId_[k]) == 421)){
-                                n_mnum = n_mnum+ 1;
-                            }
-                        }
-
-                        if ( n_mnum == 2 ){
+                        kaon_gen_p4_.SetPtEtaPhiM(gen_pt_[knum],gen_eta_[knum],gen_phi_[knum],gen_mass_[knum]);
+                        pion_gen_p4_.SetPtEtaPhiM(gen_pt_[pnum],gen_eta_[pnum],gen_phi_[pnum],gen_mass_[pnum]);
+                        d0_gen_p4_ = kaon_gen_p4_+pion_gen_p4_;
+                     
+                        // Signal//
+                        if ( abs(d0_gen_p4_.M() - d0_m_) < 0.05 ) {
                             jet_label_=3;
-
-                            kaon_rec_p4_.SetPtEtaPhiM(track_pt_[knum],track_eta_[knum],track_phi_[knum],gen_mass_[knum]);
-                            pion_rec_p4_.SetPtEtaPhiM(track_pt_[pnum],track_eta_[pnum],track_phi_[pnum],gen_mass_[pnum]);
-                            d0_rec_p4_ = kaon_rec_p4_+pion_rec_p4_;
-                            kaon_gen_p4_.SetPtEtaPhiM(gen_pt_[knum],gen_eta_[knum],gen_phi_[knum],gen_mass_[knum]);
-                            pion_gen_p4_.SetPtEtaPhiM(gen_pt_[pnum],gen_eta_[pnum],gen_phi_[pnum],gen_mass_[pnum]);
-                            d0_gen_p4_ = kaon_gen_p4_+pion_gen_p4_;
-
-                            if ( abs(d0_gen_p4_.M() - d0_m_) < 0.05 ) {
-                                jet_label_=4;
-                            }else {
-                                d0_gen_p4_.SetPtEtaPhiM(0,0,0,0);
-                                d0_rec_p4_.SetPtEtaPhiM(0,0,0,0);
-                            } 
-                        }//label 3
+                            dau_label_[pnum]=1;
+                            dau_label_[knum]=2;
+                            
+                        }else {
+                            d0_gen_p4_.SetPtEtaPhiM(0,0,0,0);
+                            d0_rec_p4_.SetPtEtaPhiM(0,0,0,0);
+                        } 
                 }//label 2: pion
             }//label 2: kaon  
         }//label 1
-        
-        //Particle relabelling
-        if (jet_label_ != 4) {
-            replace(dau_label_.begin(), dau_label_.end(), 1, 0);
-            replace(dau_label_.begin(), dau_label_.end(), 2, 0);
-        }
         
         // Fill only jet which has least 2 track particles
         if (jet_count_track_ < 2) continue;
         out_tree_->Fill();
 
         //CHECK     
-        if (jet_label_ >= 3){
+        if (jet_label_ == 3){
             std::cout << "----------------------" << std::endl;
             std::cout << "Jet tag: "<< jet_label_ << std::endl;
             std::cout << "----------------------" << std::endl;
