@@ -210,6 +210,9 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
         Int_t kaon_size = kaon_Idx.size(); 
         Int_t pion_size = pion_Idx.size(); 
         
+        // Fill only jet which has least 2 track particles
+        if (jet_count_track_ < 2) continue;
+        
         // Jet labelling    
         jet_label_ = 0;
         if ( (jet_count_d0dau_ >=2) and (jet_count_pion_>=1) and (jet_count_kaon_>=1) ){
@@ -261,8 +264,6 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
             replace(dau_label_.begin(), dau_label_.end(), 2, 0);
         }
         
-        // Fill only jet which has least 2 track particles
-        if (jet_count_track_ < 2) continue;
         out_tree_->Fill();
 
         //CHECK     
