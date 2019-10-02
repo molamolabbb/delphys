@@ -1,17 +1,14 @@
 import os, sys, getopt
 
 
-_JDS_FMT = """executable = /cms/ldap_home/yyoun/delPhys/bin/slc6_amd64_gcc630/selectDeepJet
+_JDS_FMT = """executable = /cms/ldap_home/molamolabb/delPhys/bin/slc6_amd64_gcc630/selectDeepJet
 universe   = vanilla
 
 arguments = {in_path} {out_path} {ratio} 
 
 log = condor.log
 
-requirements = ( HasSingularity == true )
 accounting_group=group_cms
-+SingularityImage = "/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-el6:latest"
-+SingularityBind = "/cvmfs, /cms, /share"
 
 getenv     = True
 should_transfer_files = YES
@@ -32,7 +29,7 @@ def main():
     txt_name = './txtFiles/deepc_{}.txt'.format(data_name)
     print data_name, txt_name, ratio
   
-    out_dir = 'root://cms-xrdr.private.lo:2094///xrd/store/user/yyoun/DeepCMeson/3-Selector/'+data_name
+    out_dir = 'root://cms-xrdr.private.lo:2094///xrd/store/user/jua/deepcmeson/3-Selector/'+data_name
     log_dir = './log/{}'.format(data_name)
     
     #Make out dir 
