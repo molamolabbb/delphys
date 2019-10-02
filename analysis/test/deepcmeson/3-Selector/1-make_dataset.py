@@ -10,7 +10,7 @@ a = []
 pathlist=  [
             #"/xrootd/store/user/seyang/DeepCMeson/1-Delphes/"            
             #"/xrootd/store/user/seya-ng/TTvsQCD/1-Delphes/TTJets_aMC"     
-            '/xrootd/store/user/yyoun/DeepCMeson/2-Analyser/'+data_name
+            '/xrootd/store/user/jua/deepcmeson/2-Analyser/'+data_name
 ]   
 for path in pathlist:
     temp = os.listdir(path)
