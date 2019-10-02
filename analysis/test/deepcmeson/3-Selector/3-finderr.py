@@ -19,7 +19,7 @@ def main():
         print "Wrong Input"
         sys.exit()
     
-    path_name = '/xrootd/store/user/yyoun/DeepCMeson/3-Selector/{}/*.root'.format(data_name)
+    path_name = '/xrootd/store/user/jua/deepcmeson/3-Selector/{}/*.root'.format(data_name)
     all_paths = glob.glob(path_name)
     num_total = len(all_paths)
     print path_name
