@@ -50,61 +50,22 @@ std::pair<int,int> isFrom(TClonesArray* particles, int ip){
 
 void doubleHiggsAnalyser::MakeOutputBranch(TTree *tree) {
   n_events_tree->Branch("event_size",&event_size,"event_size/I");
-  // MT2 variables
-  tree->Branch("lester_MT2",&lester_MT2,"lester_MT2/F");
-  tree->Branch("basic_MT2_332_bbll",&basic_MT2_332_bbll,"basic_MT2_332_bbll/F");
-  tree->Branch("ch_bisect_MT2_332",&ch_bisect_MT2_332,"ch_bisect_MT2_332/F");
-  tree->Branch("basic_MT2_332_blbl",&basic_MT2_332_blbl,"basic_MT2_332_blbl/F");
-  // MT2(b) variables
-  tree->Branch("lester_MT2_b",&lester_MT2_b,"lester_MT2_b/F");
-  tree->Branch("basic_MT2_332_b",&basic_MT2_332_b,"basic_MT2_332_b/F");
-  tree->Branch("ch_bisect_MT2_332_b",&ch_bisect_MT2_332_b,"ch_bisect_MT2_332_b/F");
-  // MT2(l) variables
-  tree->Branch("lester_MT2_l",&lester_MT2_l,"lester_MT2_l/F");
-  tree->Branch("basic_MT2_332_l",&basic_MT2_332_l,"basic_MT2_332_l/F");
-  tree->Branch("ch_bisect_MT2_332_l",&ch_bisect_MT2_332_l,"ch_bisect_MT2_332_l/F");
-  // mT = sqrt(2*pt(ll)*MET*[1-cos(phi(ll)-phi(MET))])
-  tree->Branch("mT",&mT,"mT/F");
   // lepton kinematic variables
   tree->Branch("lep1","TLorentzVector", &lepton1);
   tree->Branch("lep2","TLorentzVector", &lepton2);
   tree->Branch("ll","TLorentzVector", &leptonlepton);
   tree->Branch("ll_deltaR",&ll_deltaR,"ll_deltaR/F");
   tree->Branch("ll_deltaPhi",&ll_deltaPhi,"ll_deltaPhi/F");
-  // bottom kinematic variables
-  tree->Branch("bot1","TLorentzVector", &bottom1);
-  tree->Branch("bot2","TLorentzVector", &bottom2);
-  tree->Branch("bb","TLorentzVector",&bottombottom);
-  tree->Branch("bb_deltaR",&bb_deltaR,"bb_deltaR/F");
-  tree->Branch("bb_deltaPhi",&bb_deltaPhi,"bb_deltaPhi/F");
-  // lepton bottom kinematic variables
-  tree->Branch("bl_deltaR","vector<Float_t>",&bl_deltaR);
-  tree->Branch("bl_min_deltaR",&bl_min_deltaR,"bl_min_deltaR/F");
-  tree->Branch("bbll_deltaR",&bbll_deltaR,"bbll_deltaR/F");
-  tree->Branch("bbll_deltaPhi",&bbll_deltaPhi,"bbll_deltaPhi/F");
-  // missing et
-  tree->Branch("MET","TLorentzVector", &missing);
-  // invariant mass of bbll
-  tree->Branch("bbll","TLorentzVector",&bbll);
-  // topness and higgsness
-  tree->Branch("topness",&topness,"topness/F");
-  tree->Branch("higgsness",&higgsness,"higgsness/F");
 
   // truth matching variables
   tree->Branch("lepton1MotherPID",&lep1_mother,"lep1_mother/I");
   tree->Branch("lepton2MotherPID",&lep2_mother,"lep2_mother/I");
   tree->Branch("lepton1GrMotherPID",&lep1_grmother,"lep1_grmother/I");
   tree->Branch("lepton2GrMotherPID",&lep2_grmother,"lep2_grmother/I");
-  tree->Branch("bottom1MotherPID",&bot1_mother,"bot1_mother/I");
-  tree->Branch("bottom2MotherPID",&bot2_mother,"bot2_mother/I");
-  tree->Branch("bottom1GrMotherPID",&bot1_grmother,"bot1_grmother/I");
-  tree->Branch("bottom2GrMotherPID",&bot2_grmother,"bot2_grmother/I");
 
   // cut flow
   tree->Branch("step",&step,"step/I");
 
-  // tmva
-  tree->Branch("tmva_bdtg_output",&tmva_bdtg_output,"tmva_bdtg_output/F");
 }
 
 void doubleHiggsAnalyser::SetOutput(TString output_file_name) {
@@ -151,50 +112,16 @@ void doubleHiggsAnalyser::Initiate(TString output_file_name) {
 }
 
 void doubleHiggsAnalyser::ResetVariables() {
-  // MT2 variable
-  lester_MT2 = -99;
-  lester_MT2_b = -99;
-  lester_MT2_l = -99;
-  basic_MT2_332_bbll = -99;
-  basic_MT2_332_b = -99;
-  basic_MT2_332_l = -99;
-  basic_MT2_332_blbl = -99;
-  ch_bisect_MT2_332 = -99;
-  ch_bisect_MT2_332_b = -99;
-  ch_bisect_MT2_332_l = -99;
-
-  // lepton kinematic variables
-  ll_deltaR = -99;
-  ll_deltaPhi = -99;
-
-  // bottom kinematic variables
-  bb_deltaR = -99;
-  bb_deltaPhi = -99;
-
-  // lepton bottom kinematic variables
-  bl_deltaR.clear();
-  bl_min_deltaR = -99;
-  bbll_deltaR = -99;
-  bbll_deltaPhi = -99;
-
-  // mT
-  mT = -99;
 
   // truth matching variables 
   lep1_mother = 0;
   lep2_mother = 0;
-  bot1_mother = 0;
-  bot2_mother = 0;
   lep1_grmother = 0;
   lep2_grmother = 0;
-  bot1_grmother = 0;
-  bot2_grmother = 0;
 
   // cut flow
   step = 0;
 
-  topness = std::numeric_limits<double>::quiet_NaN();
-  higgsness = std::numeric_limits<double>::quiet_NaN();
   
   // lepton and bottom maps
   leptons.clear();
@@ -421,24 +348,6 @@ void doubleHiggsAnalyser::Finalize() {
 
 int main(Int_t argc,Char_t** argv)
 {
-  string sample_list[] = {"pp_hh","pp_llbj","pp_tatabb","pp_tt","pp_tt_ditau","pp_tt_leptau","pp_tth","pp_ttv","pp_twj"} ;
-  int numofSample[] = {6,2,11,3,2,1,3,1,3};
-  // single
-  /*
-  TChain *tree = new TChain("Delphes");
-  TString output_name;
-  for (int i=1; i < 3; i++){
-    std::string filename = "/xrootd_user/molamolabb/xrootd/doubleHiggs/sample/pp_jjllnn/"+std::to_string(i)+".root";
-    tree->Add(filename.c_str());
-  }
-  output_name = "output_analyser/190802/pp_jjllnn.root";
-  tree->SetBranchStatus("*",true);
-  doubleHiggsAnalyser ana(tree,true);
-  ana.Initiate(output_name);
-  ana.Loop();
-  ana.Finalize();
-
- */ 
   struct tm* datetime;
   time_t t;
   t = time(NULL);
@@ -446,24 +355,18 @@ int main(Int_t argc,Char_t** argv)
   TString output_path = "output_analyser/"+std::to_string(datetime->tm_year+1900)+std::to_string(datetime->tm_mon+1)+std::to_string(datetime->tm_mday);
   mkdir(output_path,0777);
 
-  for (int j=0; j<9;j++){
-    TChain *tree = new TChain("Delphes");
-    TString output_name;
-  //TString weight_file_path = "/home/molamolabb/delPhys/src/delphys/analysis/test/hh/dataset_HH_SM.root/weights/DoubleHiggs_BDTG.weights.xml";
+  TChain *tree = new TChain("Delphes");
+  TString output_name;
  
-    for (int i = 1; i< numofSample[j]+1; i++){
-    std::string filename = "/xrootd_user/molamolabb/xrootd/doubleHiggs/sample/"+sample_list[j]+"/"+std::to_string(i)+".root";
-    tree->Add(filename.c_str());
-    }
+  std::string filename = "/xrootd_user/molamolabb/xrootd/doubleHiggs/sample/pp_hh/1.root";
+  tree->Add(filename.c_str());
         
-    output_name = "output_analyser/"+std::to_string(datetime->tm_year+1900)+std::to_string(datetime->tm_mon+1)+std::to_string(datetime->tm_mday)+"/"+sample_list[j]+".root";
-    tree->SetBranchStatus("*",true);
+  output_name = "output_analyser/"+std::to_string(datetime->tm_year+1900)+std::to_string(datetime->tm_mon+1)+std::to_string(datetime->tm_mday)+"/"+"pp_hh.root";
+  tree->SetBranchStatus("*",true);
     
-    doubleHiggsAnalyser ana(tree, true);
-    ana.Initiate(output_name); // usage : Initiate("outputfilename.root")
-    //ana.SetTMVA(weight_file_path);
-    ana.Loop(); // Loop through the events and do doubleHIggsAnalyser::Analysis() per event.
-    ana.Finalize(); // Write the tree and Close the file.
-  }
+  doubleHiggsAnalyser ana(tree, true);
+  ana.Initiate(output_name); // usage : Initiate("outputfilename.root")
+  ana.Loop(); // Loop through the events and do doubleHIggsAnalyser::Analysis() per event.
+  ana.Finalize(); // Write the tree and Close the file.
   return 0;
 }

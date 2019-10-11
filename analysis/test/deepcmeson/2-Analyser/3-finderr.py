@@ -29,6 +29,7 @@ def main():
     for path in all_paths:
         root_file = ROOT.TFile(path)
         if root_file.IsZombie():
+            print(root_file.IsZombie())
             num_zombies += 1
             root_file.Close()
             del root_file
