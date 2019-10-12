@@ -192,10 +192,12 @@ bool doubleHiggsAnalyser::Analysis(){
     if (pid1*pid2 > 0) return false;
     if(abs(pid1)>0){
       auto lep1 = static_cast<const GenParticle *>(particles->At(index_l1));
+      cout<<lep1->Mass<<endl;
       lepton1.SetPtEtaPhiM(lep1->PT,lep1->Eta,lep1->Phi,lep1->Mass);
     } 
     if(abs(pid2)>0){
       auto lep2 = static_cast<const GenParticle *>(particles->At(index_l2));
+      cout<<lep2->Mass<<endl;
       lepton2.SetPtEtaPhiM(lep2->PT,lep2->Eta,lep2->Phi,lep2->Mass);
     } 
     //auto lep1 = static_cast<const GenParticle *>(particles->At(lepton_iter->second));
@@ -214,46 +216,6 @@ bool doubleHiggsAnalyser::Analysis(){
     ll_deltaR = fabs(lepton1.DeltaR(lepton2));
     ll_deltaPhi = fabs(lepton1.DeltaPhi(lepton2));
      
-    // collect b jets
-    for (int ij = 0; ij < jets->GetEntries(); ij++){
-      auto jet = static_cast<const Jet *>(jets->At(ij));
-      if (abs(jet->Flavor) != doubleHiggsAnalyser::Bottom_PID || fabs(jet->PT) < 30 || fabs(jet->Eta) > 2.4) continue;
-      bottoms.insert(make_pair(jet->PT,ij));
-    }
-    
-    if (bottoms.size()!=2) {
-      return false;
-    }
-    
-    bottom_iter = bottoms.begin();
-    auto bot1 = static_cast<const Jet *>(jets->At(bottom_iter->second));
-    bottom1.SetPtEtaPhiM(bot1->PT,bot1->Eta,bot1->Phi,bot1->Mass);
-    //auto bottom1_pdg = isFrom(particles, bottom_iter->second); // bottom truth matching
-    //bot1_mother = abs(bottom1_pdg.first);
-    //bot1_grmother = abs(bottom1_pdg.second);
-    bottom_iter ++;
-    auto bot2 = static_cast<const Jet *>(jets->At(bottom_iter->second));
-    bottom2.SetPtEtaPhiM(bot2->PT,bot2->Eta,bot2->Phi,bot2->Mass);
-    bottombottom = bottom1+bottom2;
-    bb_M = bottombottom.M();
-    bb_Pt = bottombottom.Pt();
-    //auto bottom2_pdg = isFrom(particles, bottom_iter->second); // bottom truth matching
-    //bot2_mother = abs(bottom2_pdg.first);
-    //bot2_grmother = abs(bottom2_pdg.second);
-
-    // bottom kinematic variables
-    bb_deltaR = fabs(bottom1.DeltaR(bottom2));
-    bb_deltaPhi = fabs(bottom1.DeltaPhi(bottom2));
-    // bbll
-    bbll = bottombottom + leptonlepton;
-    // lepton and bottom kinematic variables
-    bl_deltaR.push_back(lepton1.DeltaR(bottom1));
-    bl_deltaR.push_back(lepton2.DeltaR(bottom1));
-    bl_deltaR.push_back(lepton1.DeltaR(bottom2));
-    bl_deltaR.push_back(lepton2.DeltaR(bottom2));
-    bl_min_deltaR = *min_element(begin(bl_deltaR),end(bl_deltaR));
-    bbll_deltaR = leptonlepton.DeltaR(bottombottom);
-    bbll_deltaPhi = leptonlepton.DeltaPhi(bottombottom);
     // mT
     mT = sqrt(2*leptonlepton.Pt()*missing.E()*(1-cos(leptonlepton.Phi()-missing.Phi())));
 
@@ -268,51 +230,6 @@ bool doubleHiggsAnalyser::Analysis(){
     // get TLorentzVector to the global variable for Minuit
     g_missing = missing;
     g_lepton1 = lepton1; g_lepton2 = lepton2;
-    g_bottom1 = bottom1; g_bottom2 = bottom2;
-    higgsness = GetHiggsness();
-    topness = GetTopness();
-    
-    // MT2
-    Mt2::LorentzTransverseVector vis_A(Mt2::TwoVector(leptonlepton.Px(), leptonlepton.Py()), leptonlepton.M());
-    Mt2::LorentzTransverseVector vis_B(Mt2::TwoVector(bottombottom.Px(), bottombottom.Py()), bottombottom.M());
-    Mt2::TwoVector pT_Miss(missing.Px(), missing.Py());
-    //lester_MT2 = asymm_mt2_lester_bisect::get_mT2( // the simpliest way to calculate MT2
-    //          leptonlepton.M(),leptonlepton.Px(),leptonlepton.Py(),
-    //          bottombottom.M(),bottombottom.Px(),bottombottom.Px(),
-    //          missing.Px(),missing.Py(),
-    //          missing.M(),missing.M());
-    basic_MT2_332_bbll = basic_mt2_332Calculator.mt2_332(vis_A, vis_B, pT_Miss, missing.M());
-    ch_bisect_MT2_332 = ch_bisect_mt2_332Calculator.mt2_332(vis_A, vis_B, pT_Miss, missing.M());
-    // MT2(bl+bl)
-    bottomlepton1 = lepton1 + bottom2;
-    bottomlepton2 = lepton2 + bottom1;
-    Mt2::LorentzTransverseVector vis_A_blbl(Mt2::TwoVector(bottomlepton1.Px(), bottomlepton1.Py()), bottomlepton1.M());
-    Mt2::LorentzTransverseVector vis_B_blbl(Mt2::TwoVector(bottomlepton2.Px(), bottomlepton2.Py()), bottomlepton2.M());
-    basic_MT2_332_blbl = basic_mt2_332Calculator.mt2_332(vis_A_blbl, vis_B_blbl, pT_Miss, missing.M());
-    // MT2(b)
-    Mt2::LorentzTransverseVector vis_A_b(Mt2::TwoVector(bottom1.Px(), bottom1.Py()), bottom1.M());
-    Mt2::LorentzTransverseVector vis_B_b(Mt2::TwoVector(bottom2.Px(), bottom2.Py()), bottom2.M());
-    Mt2::TwoVector pT_Miss_b(leptonlepton.Px(), leptonlepton.Py());
-    
-    //lester_MT2_b = asymm_mt2_lester_bisect::get_mT2( // the simpliest way to calculate MT2
-    //          bottom1.M(),bottom1.Px(),bottom1.Py(),
-    //          bottom2.M(),bottom2.Px(),bottom2.Px(),
-    //          leptonlepton.Px(),leptonlepton.Py(),
-    //          leptonlepton.M(),leptonlepton.M());
-    basic_MT2_332_b = basic_mt2_332Calculator.mt2_332(vis_A_b, vis_B_b, pT_Miss_b, leptonlepton.M());
-    ch_bisect_MT2_332_b = ch_bisect_mt2_332Calculator.mt2_332(vis_A_b, vis_B_b, pT_Miss_b, leptonlepton.M());
-    // MT2(l)
-    Mt2::LorentzTransverseVector vis_A_l(Mt2::TwoVector(lepton1.Px(), lepton1.Py()), lepton1.M());
-    Mt2::LorentzTransverseVector vis_B_l(Mt2::TwoVector(lepton2.Px(), lepton2.Py()), lepton2.M());
-    Mt2::TwoVector pT_Miss_l(missing.Px(), missing.Py());
-    //lester_MT2_l = asymm_mt2_lester_bisect::get_mT2( // the simpliest way to calculate MT2
-    //          lepton1.M(),lepton1.Px(),lepton1.Py(),
-    //          lepton2.M(),lepton2.Px(),lepton2.Px(),
-    //          missing.Px(),missing.Py(),
-    //          missing.M(),missing.M());
-    basic_MT2_332_l = basic_mt2_332Calculator.mt2_332(vis_A_l, vis_B_l, pT_Miss_l, missing.M());
-    ch_bisect_MT2_332_l = ch_bisect_mt2_332Calculator.mt2_332(vis_A_l, vis_B_l, pT_Miss_l, missing.M());
-    //tmva_bdtg_output = bdtg_reader->EvaluateMVA("BDTG");
     return true;
 }
 
