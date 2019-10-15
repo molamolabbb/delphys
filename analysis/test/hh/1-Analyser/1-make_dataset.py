@@ -1,20 +1,23 @@
 #!/usr/bin/env python
-import os
+import os,sys
 import pprint
 
 pp = pprint.pprint
 filename = './txtFiles/doubleHiggs.txt'
 f = open(filename , "w")
 a = []
-pathlist=  ["/xrootd/store/user/jua/doubleHiggs/sample/pp_hh/",
-              "/xrootd/store/user/jua/doubleHiggs/sample/pp_llbj/",
-              "/xrootd/store/user/jua/doubleHiggs/sample/pp_tatabb/",
-              "/xrootd/store/user/jua/doubleHiggs/sample/pp_tt/",
-              "/xrootd/store/user/jua/doubleHiggs/sample/pp_tt_ditau/",
-              "/xrootd/store/user/jua/doubleHiggs/sample/pp_tt_leptau/",
-              "/xrootd/store/user/jua/doubleHiggs/sample/pp_tth/",
-              "/xrootd/store/user/jua/doubleHiggs/sample/pp_ttv/",
-              "/xrootd/store/user/jua/doubleHiggs/sample/pp_twj/"
+sample = sys.argv[1]
+pathlist=  [
+               "/xrootd/store/user/jua/doubleHiggs/sample/"+str(sample)
+#              "/xrootd/store/user/jua/doubleHiggs/sample/pp_hh/",
+#              "/xrootd/store/user/jua/doubleHiggs/sample/pp_llbj/",
+#              "/xrootd/store/user/jua/doubleHiggs/sample/pp_tatabb/",
+#              "/xrootd/store/user/jua/doubleHiggs/sample/pp_tt/",
+#              "/xrootd/store/user/jua/doubleHiggs/sample/pp_tt_ditau/",
+#              "/xrootd/store/user/jua/doubleHiggs/sample/pp_tt_leptau/",
+#              "/xrootd/store/user/jua/doubleHiggs/sample/pp_tth/",
+#              "/xrootd/store/user/jua/doubleHiggs/sample/pp_ttv/",
+#              "/xrootd/store/user/jua/doubleHiggs/sample/pp_twj/"
 ]   
 
 for path in pathlist:
