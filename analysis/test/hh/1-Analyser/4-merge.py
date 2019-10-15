@@ -12,7 +12,7 @@ import ROOT
 
 def main():
     # Set Merge Input Folder 
-    data_name = '1'
+    data_name = 'test'
     if len(sys.argv) == 2:
         data_name = sys.argv[1:][0]
     elif len(sys.argv) > 2 : 

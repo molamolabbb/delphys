@@ -47,9 +47,6 @@ root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_llbj/
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_llbj/8.root
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_llbj/9.root
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_tatabb/1.root
-root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_tatabb/10.root
-root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_tatabb/11.root
-root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_tatabb/12.root
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_tatabb/13.root
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_tatabb/14.root
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_tatabb/15.root
@@ -70,7 +67,6 @@ root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_tatab
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_tatabb/6.root
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_tatabb/7.root
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_tatabb/8.root
-root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_tatabb/9.root
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_tt/1.root
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_tt/2.root
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_tt/3.root
@@ -114,7 +110,17 @@ root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_ttv/5
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_ttv/6.root
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_ttv/7.root
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_twj/1.root
+root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_twj/10.root
+root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_twj/11.root
+root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_twj/12.root
+root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_twj/13.root
+root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_twj/14.root
+root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_twj/15.root
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_twj/2.root
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_twj/3.root
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_twj/4.root
 root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_twj/5.root
+root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_twj/6.root
+root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_twj/7.root
+root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_twj/8.root
+root://cms-xrdr.private.lo:2094///xrd/store/user/jua/doubleHiggs/sample/pp_twj/9.root

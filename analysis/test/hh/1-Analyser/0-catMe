@@ -2,14 +2,16 @@
 --------------------------------------------------------------------
                         < Analyser Basic >
    
-           $ analyseDeepCMeson [ Input File ] [ Out File ]       
+           $ doubleHiggsAnalyser [ Input File ] [ Out File ]       
               
-                Input Example : ../1-Generation/
+                Input  Example : /xrootd_user/molamolabb/xrootd/doubleHiggs/sample/pp_hh/1.root
+                Output Example : /xrootd_user/molamolabb/xrootd/doubleHiggs/1-Analyser/pp_hh/1.root
 --------------------------------------------------------------------
 --------------------------------------------------------------------
                          1. Make TXT File 
                   
-                      $ python 1-make_dataset 
+                      $ python 1-make_dataset.py
+
 --------------------------------------------------------------------
 --------------------------------------------------------------------
                         2. Run With Condor

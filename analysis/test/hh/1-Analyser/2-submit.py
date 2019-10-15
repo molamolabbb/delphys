@@ -1,7 +1,7 @@
 import os, sys, getopt
 
-data_name = '1'
-txt_name = '../txtFiles/doubleHiggs.txt'
+data_name = 'test'
+txt_name = './txtFiles/doubleHiggs.txt'
 if len(sys.argv) == 2 :
     data_name = sys.argv[1:][0]
 elif len(sys.argv) == 3 :
@@ -41,7 +41,7 @@ def main():
         input_path_list = [each.rstrip('\n') for each in txt_file.readlines()]
     for in_path in input_path_list:
         in_name = os.path.basename(in_path)
-        out_name = in_name.replace('delphes', 'out')
+        out_name = in_name
         suffix = in_name.lstrip("delphes_").rstrip(".root")
         out_path = os.path.join(out_dir, out_name)
 
@@ -49,7 +49,7 @@ def main():
         with open('{}/submit.jds'.format(log_dir), 'w') as jds_file:
             jds_file.write(_JDS_FMT.format(in_path=in_path, out_path=out_path, suffix=suffix, data_name=data_name))
     
-        command = "condor_submit -batch-name DeepCMeson_{} {}/submit.jds".format(data_name, log_dir)
+        command = "condor_submit -batch-name doubleHiggs_{} {}/submit.jds".format(data_name, log_dir)
         os.system(command)
 
 if __name__ == '__main__':
