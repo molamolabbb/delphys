@@ -258,10 +258,13 @@ bool doubleHiggsAnalyser::Analysis(){
     if (abs(pid1)==doubleHiggsAnalyser::Electron_PID){
       auto lep1 = static_cast<const Electron *>(electrons->At(index_l1));
       lepton1.SetPtEtaPhiM(lep1->PT,lep1->Eta,lep1->Phi,doubleHiggsAnalyser::Electron_Mass);
+      cout << doubleHiggsAnalyser::Electron_Mass<<endl;
     }
+      
     else if (abs(pid1)==doubleHiggsAnalyser::Muon_PID){
       auto lep1 = static_cast<const Muon *>(muons->At(index_l1));
       lepton1.SetPtEtaPhiM(lep1->PT,lep1->Eta,lep1->Phi,doubleHiggsAnalyser::Muon_Mass);
+      cout << doubleHiggsAnalyser::Muon_Mass<<endl;
     }
     /*
     else{
@@ -432,42 +435,14 @@ void doubleHiggsAnalyser::Finalize() {
 
 int main(Int_t argc,Char_t** argv)
 {
-  string sample_list[] = {"pp_hh","pp_llbj","pp_tatabb","pp_tt","pp_tt_ditau","pp_tt_leptau","pp_tth","pp_ttv","pp_twj"} ;
-  int numofSample[] = {24,7,20,8,2,8,10,7,3};
-  // single
-  /*
   TChain *tree = new TChain("Delphes");
-  TString output_name;
-  for (int i=1; i < 3; i++){
-    std::string filename = "/xrootd_user/molamolabb/xrootd/doubleHiggs/sample/pp_jjllnn/"+std::to_string(i)+".root";
-    tree->Add(filename.c_str());
-  }
-  output_name = "output_analyser/190802/pp_jjllnn.root";
+  TString filename(argv[1]);
+  TString output_name(argv[2]);
+  tree->Add(filename); 
   tree->SetBranchStatus("*",true);
   doubleHiggsAnalyser ana(tree,true);
   ana.Initiate(output_name);
   ana.Loop();
   ana.Finalize();
-
- */ 
-  for (int j=0; j<9;j++){
-    TChain *tree = new TChain("Delphes");
-    TString output_name;
-  //TString weight_file_path = "/home/molamolabb/delPhys/src/delphys/analysis/test/hh/dataset_HH_SM.root/weights/DoubleHiggs_BDTG.weights.xml";
- 
-    for (int i = 1; i< numofSample[j]+1; i++){
-    std::string filename = "/xrootd_user/molamolabb/xrootd/doubleHiggs/sample/"+sample_list[j]+"/"+std::to_string(i)+".root";
-    tree->Add(filename.c_str());
-    }
-  
-    output_name = "output_analyser/190805/"+sample_list[j]+".root";
-    tree->SetBranchStatus("*",true);
-    
-    doubleHiggsAnalyser ana(tree, true);
-    ana.Initiate(output_name); // usage : Initiate("outputfilename.root")
-    //ana.SetTMVA(weight_file_path);
-    ana.Loop(); // Loop through the events and do doubleHIggsAnalyser::Analysis() per event.
-    ana.Finalize(); // Write the tree and Close the file.
-  }
   return 0;
 }
