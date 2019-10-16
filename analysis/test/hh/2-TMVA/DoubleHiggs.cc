@@ -121,7 +121,6 @@ int DoubleHiggs(TString myMethodList = "")
    dataloader2->AddVariable( "bbll_deltaPhi", 'F' );
    dataloader2->AddVariable( "mT", 'F');
    dataloader2->AddVariable( "basic_MT2_332_bbll", 'F' );
-   //dataloader2->AddSpectator( "mass_had", 'F' );
    dataloader2->AddVariable( "topness", 'F' );
    dataloader2->AddVariable( "higgsness", 'F' );
 
@@ -130,8 +129,8 @@ int DoubleHiggs(TString myMethodList = "")
    Double_t backgroundWeight = 1.0;
 
    // You can add an arbitrary number of signal or background trees
-   dataloader->AddSignalTree    ( signalTree,     signalWeight );
-   dataloader->AddBackgroundTree( backgroundTree, backgroundWeight );
+   dataloader -> AddSignalTree    ( signalTree,     signalWeight );
+   dataloader-> AddBackgroundTree( backgroundTree, backgroundWeight );
 
    //dataloader->SetBackgroundWeightExpression( "weight" );
 

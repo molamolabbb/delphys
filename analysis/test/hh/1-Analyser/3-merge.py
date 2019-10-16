@@ -37,13 +37,14 @@ def main():
         names_target += "%s "%(path)
 
         if (i+1)%500 == 0:
-            command = 'hadd {}/{}.root {}'.format(merge_dir, i, names_target)
+            command = 'hadd {}/{}.root {}'.format(merge_dir, data_name, names_target)
             os.system(command)
             # Reset merge target 
             names_target = ""
 
     command = 'hadd {}/{}.root {}'.format(merge_dir,i, names_target)
     os.system(command)
-
+    mv_com = "mv ./result/{}/*.root ./result/{}/{}.root".format(data_name, data_name, data_name)
+    os.system(mv_com)
 if __name__ == '__main__':
     main()

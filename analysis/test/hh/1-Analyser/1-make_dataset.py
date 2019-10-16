@@ -2,11 +2,11 @@
 import os,sys
 import pprint
 
+sample = sys.argv[1]
 pp = pprint.pprint
-filename = './txtFiles/doubleHiggs.txt'
+filename = './txtFiles/'+str(sample)+'.txt'
 f = open(filename , "w")
 a = []
-sample = sys.argv[1]
 pathlist=  [
                "/xrootd/store/user/jua/doubleHiggs/sample/"+str(sample)
 #              "/xrootd/store/user/jua/doubleHiggs/sample/pp_hh/",
