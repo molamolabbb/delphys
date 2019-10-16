@@ -62,9 +62,9 @@ int DoubleHiggs( TString myMethodList = "" )
    TFile *input(0);
    TFile *input2(0);
 
-   TString directory = "/cms/ldap_home/sunyoung/doubleHiggs/src/delphys/analysis/test/hh/result/";
+   TString directory = "/cms/ldap_home/molamolabb/delPhys/src/delphys/analysis/bin/output_analyser/";
    TString sig_file = "HH_SM.root";
-   TString bg_file = "TT_200.root";
+   TString bg_file = "pp_tt_ditau.root";
 
    input = TFile::Open( directory+sig_file );
    input2 = TFile::Open( directory+bg_file );
@@ -118,6 +118,8 @@ int DoubleHiggs( TString myMethodList = "" )
    dataloader2->AddVariable( "mT", 'F');
    dataloader2->AddVariable( "basic_MT2_332_bbll", 'F' );
    //dataloader2->AddSpectator( "mass_had", 'F' );
+   dataloader2->AddVariable( "topness", 'F' );
+   dataloader2->AddVariable( "higgsness", 'F' );
 
    // global event weights per tree (see below for setting event-wise weights)
    Double_t signalWeight     = 1.0;

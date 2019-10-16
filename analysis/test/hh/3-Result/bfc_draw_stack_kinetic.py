@@ -1,5 +1,7 @@
 import ROOT, math
 from ROOT import *
+import datetime
+import os
 
 hlist = {"bfc":{"tt":dict(),"tt_ditau":dict(),"tt_leptau":dict(),"tatabb":dict(), "ttv":dict(),"tth":dict(),"twj":dict(), "llbj":dict(), "hh":dict()}}
 #sample_list = ["tt","tt_ditau","tt_leptau","tatabb","ttv","tth","twj","llbj","hh"]
@@ -91,7 +93,11 @@ for order in order_list:
     #legend.AddEntry(t,sample)
     legend.Draw()
     cvs.SetTitle("Before BDT cut "+order)
-    cvs.SaveAs("bf_plots/190807/Before_cut"+"_"+order+".png")
+    now = datetime.datetime.now()
+    nowDate = now.strftime('%Y%m%d')
+    if not os.path.isdir("bf_plots/"+nowDate):
+      os.mkdir("bf_plots/"+nowDate)
+    cvs.SaveAs("bf_plots/"+nowDate+"/Before_cut"+"_"+order+".png")
 '''
 # Plotting Before Cut
 for order in order_list:

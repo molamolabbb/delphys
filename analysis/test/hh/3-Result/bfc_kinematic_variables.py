@@ -37,7 +37,7 @@ for key in ["bfc"]:
                 hlist[key][key2][key3] = getHistogram(key2+" "+key+" "+key3.replace("_"," "),limit_list[key3][key][0],limit_list[key3][key][1],limit_list[key3][key][2])
 
 
-data_path = "/cms/ldap_home/molamolabb/delPhys/src/delphys/analysis/bin/output_analyser/190805/"
+data_path = "/cms/ldap_home/molamolabb/delPhys/src/delphys/analysis/bin/output_analyser/2019826/"
 for sample in sample_list:
     globals()[sample+'{}'.format("_c")] = ROOT.TChain("events")
     globals()[sample+'{}'.format("_c")].Add(data_path+"pp_"+sample+".root")
