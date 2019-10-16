@@ -15,8 +15,9 @@
 #include "TMVA/DataLoader.h"
 #include "TMVA/Tools.h"
 #include "TMVA/TMVAGui.h"
+using namespace std;
 
-int DoubleHiggs( TString myMethodList = "" )
+int DoubleHiggs(TString myMethodList = "")
 {
    // This loads the library
    TMVA::Tools::Instance();
@@ -62,9 +63,11 @@ int DoubleHiggs( TString myMethodList = "" )
    TFile *input(0);
    TFile *input2(0);
 
-   TString directory = "/cms/ldap_home/molamolabb/delPhys/src/delphys/analysis/bin/output_analyser/";
-   TString sig_file = "HH_SM.root";
-   TString bg_file = "pp_tt_ditau.root";
+   TString directory = "/cms/ldap_home/molamolabb/delPhys/src/delphys/analysis/test/hh/1-Analyser/result/";
+   TString sig_name  = "pp_hh";
+   TString bg_name   = "pp_tatabb";
+   TString sig_file  = sig_name+"/"+sig_name+".root";
+   TString bg_file   = bg_name+"/"+bg_name+".root";
 
    input = TFile::Open( directory+sig_file );
    input2 = TFile::Open( directory+bg_file );
@@ -72,19 +75,19 @@ int DoubleHiggs( TString myMethodList = "" )
    std::cout << "double Higgs using file : " << input->GetName() << std::endl;
 
    // Register the training and test trees
-   TTree *signalTree     = (TTree*)input->Get("events");
-   TTree *backgroundTree     = (TTree*)input2->Get("events");
+   TTree *signalTree       = (TTree*)input->Get("events");
+   TTree *backgroundTree   = (TTree*)input2->Get("events");
 
    // Create a ROOT output file where TMVA will store ntuples, histograms, etc.
-   TString outfileName( "doubleHiggs.root" );
+   TString outfileName( "doubleHiggs_TMVA.root" );
    TFile* outputFile = TFile::Open( outfileName, "RECREATE" );
 
    TMVA::Factory *factory = new TMVA::Factory( "DoubleHiggs", outputFile,
                                                "!V:!Silent:Color:DrawProgressBar:Transformations=I:AnalysisType=Classification" );
 //                                               "!V:!Silent:Color:DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification" );
 
-   TMVA::DataLoader *dataloader=new TMVA::DataLoader("dataset_"+sig_file);
-   TMVA::DataLoader *dataloader2=new TMVA::DataLoader("dataset_"+bg_file);
+   TMVA::DataLoader *dataloader=new TMVA::DataLoader("dataset_"+sig_name);
+   TMVA::DataLoader *dataloader2=new TMVA::DataLoader("dataset_"+bg_name);
 
    //    (TMVA::gConfig().GetVariablePlotting()).fTimesRMS = 8.0;
    //    (TMVA::gConfig().GetIONames()).fWeightFileDir = "myWeightDirectory";
@@ -104,8 +107,9 @@ int DoubleHiggs( TString myMethodList = "" )
    dataloader->AddVariable( "bbll_deltaPhi", 'F' );
    dataloader->AddVariable( "mT", 'F');
    dataloader->AddVariable( "basic_MT2_332_bbll", 'F' );
-   //dataloader->AddSpectator( "mass_had", 'F' );
-   //dataloader2->AddVariable( "log_d_had := log(d_had)", 'F' );
+   dataloader->AddVariable( "topness", 'F' );
+   dataloader->AddVariable( "higgsness", 'F' );
+   
    dataloader2->AddVariable( "ll_deltaR", 'F' );
    dataloader2->AddVariable( "ll.Pt()", 'F' );
    dataloader2->AddVariable( "ll.M()", 'F' );
