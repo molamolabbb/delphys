@@ -1,5 +1,5 @@
 import ROOT, math
-hlist = { "bfc": {"tt":dict(),"tt_ditau":dict(),"tt_leptau":dict(),"tatabb":dict(),"ttv":dict(),"tth":dict(),"twj":dict(),"llbj":dict(), "hh":dict()}}
+hlist = { "afc": {"tt":dict(),"tt_ditau":dict(),"tt_leptau":dict(),"tatabb":dict(),"ttv":dict(),"tth":dict(),"twj":dict(),"llbj":dict(), "hh":dict()}}
 sample_list = ["tt","tt_ditau","tt_leptau","tatabb","ttv","tth","twj","llbj","hh"]
 
 limit_list = { 'll_pt'               : { "bfc":[60,0,700],    "afc":[60,0,700] },
@@ -32,7 +32,7 @@ limit_list = { 'll_pt'               : { "bfc":[60,0,700],    "afc":[60,0,700] }
 def getHistogram(title,binning,lower_limit,upper_limit):
     return ROOT.TH1D(title,title,binning,lower_limit,upper_limit)
 
-for key in ["bfc"]:
+for key in ["afc"]:
     for key2 in sample_list:
         for key3 in limit_list.keys():
             if key3 is "hig_top_2d":
@@ -47,19 +47,6 @@ for sample in sample_list:
     globals()[sample+'{}'.format("_c")].Add(data_path+"/"+"pp_"+sample+"/"+"pp_"+sample+".root")
 
 
-'''
-tt_c = ROOT.TChain("events")
-tt_c.Add(data_path+"pp_tt.root")
-tt_leptau_c = ROOT.TChain("events")
-tt_leptau_c.Add(data_path+"pp_tt_leptau.root")
-tt_c.Add(data_path+"pp_tt.root")
-tt_ditau_c = ROOT.TChain("events")
-tt_ditau_c.Add(data_path+"pp_tt_ditau.root")
-hh_c = ROOT.TChain("events")
-hh_c.Add(data_path+"pp_hh.root")
-tatabb_c = ROOT.TChain("events")
-tatabb_c.Add(data_path+"pp_tatabb2.root")
-'''
 #sample_lists = {"tt_ditau":tt_ditau_c,"hh":hh_c,"tatabb":tatabb_c}
 sample_lists = {"tt":tt_c,"tt_ditau":tt_ditau_c,"tt_leptau":tt_leptau_c,"tatabb":tatabb_c,"ttv":ttv_c,"tth":tth_c,"twj":twj_c,"llbj":llbj_c,"hh":hh_c}
 f = ROOT.TFile("distribution.root","RECREATE")
@@ -69,8 +56,8 @@ for sample in sample_list:
     c = sample_lists[sample]
     for ie, e in enumerate(c):
         cut = ""
-        if e.step >= 4 :
-            cut = "bfc"
+        if e.step == 4 and e.tmva_bdtg_output > 0:
+            cut = "afc"
             hlist[cut][sample]['ll_pt'].Fill(e.ll.Pt())
             hlist[cut][sample]['bb_pt'].Fill(e.bb.Pt())
             hlist[cut][sample]['l1_pt'].Fill(e.lep1.Pt())
@@ -100,9 +87,9 @@ for sample in sample_list:
                 hlist[cut][sample]["bl_deltaR"].Fill(bld)
 num_bg = 0
 for sample in sample_list:
-    num_bg += hlist["bfc"][sample]["mT"].GetEntries()
+    num_bg += hlist["afc"][sample]["mT"].GetEntries()
 num_bg = num_bg * 3869480.648 / 1559547
-num_sg = hlist["bfc"]["hh"]["mT"].GetEntries()
+num_sg = hlist["afc"]["hh"]["mT"].GetEntries()
 num_sg = num_sg * 104.06 / 899997
 sensitivity = num_sg/math.sqrt(num_bg+num_sg)
 print "number of background : " + str(num_bg) + "\n"
@@ -110,7 +97,7 @@ print "number of signal : " + str(num_sg) + "\n"
 print "sensitivity : " + str(sensitivity) + "\n"
 
 
-for key in ["bfc"]:
+for key in ["afc"]:
     for key2 in sample_list:
         for key3 in hlist[key][key2].keys():
             #integ = hlist[key][key2][key3].Integral()
