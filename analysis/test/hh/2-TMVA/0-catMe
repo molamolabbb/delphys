@@ -1,18 +1,18 @@
 --------------------------------------------------------------------
 --------------------------------------------------------------------
-                        < Analyser Basic >
+                        < TMVA Basic >
    
-           $ doubleHiggsAnalyser [ Input File ] [ Out File ]       
-              
-                Input  Example : /xrootd_user/molamolabb/xrootd/doubleHiggs/sample/pp_hh/1.root
-                Output Example : /xrootd_user/molamolabb/xrootd/doubleHiggs/1-Analyser/pp_hh/1.root
+                      $ root -l DoubleHiggs.cc     
+
+    !! If changing the Backgrounds -> Change the line 68 "bg_name" !! 
+             !! Results are in the "bdt_output" directory !!
 --------------------------------------------------------------------
 --------------------------------------------------------------------
                          1. Make TXT File 
                   
-           $ python 1-make_dataset.py [ Sample Name ]
+              $ python 1-make_dataset.py [ Sample Name ]
 
-                Sample Example : pp_hh
+                    Sample Example : pp_hh
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------

@@ -65,7 +65,7 @@ int DoubleHiggs(TString myMethodList = "")
 
    TString directory = "/cms/ldap_home/molamolabb/delPhys/src/delphys/analysis/test/hh/1-Analyser/result/";
    TString sig_name  = "pp_hh";
-   TString bg_name   = "pp_twj";
+   TString bg_name   = "pp_tt_all";
    TString sig_file  = sig_name+"/"+sig_name+".root";
    TString bg_file   = bg_name+"/"+bg_name+".root";
 
@@ -86,8 +86,8 @@ int DoubleHiggs(TString myMethodList = "")
                                                "!V:!Silent:Color:DrawProgressBar:Transformations=I:AnalysisType=Classification" );
 //                                               "!V:!Silent:Color:DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification" );
 
-   TMVA::DataLoader *dataloader=new TMVA::DataLoader("bdt_output/dataset_"+sig_name);
-   TMVA::DataLoader *dataloader2=new TMVA::DataLoader("bdt_output/dataset_"+bg_name);
+   TMVA::DataLoader *dataloader=new TMVA::DataLoader("dataset_"+sig_name+"_"+bg_name);
+   TMVA::DataLoader *dataloader2=new TMVA::DataLoader("dataset_"+bg_name);
 
    //    (TMVA::gConfig().GetVariablePlotting()).fTimesRMS = 8.0;
    //    (TMVA::gConfig().GetIONames()).fWeightFileDir = "myWeightDirectory";
