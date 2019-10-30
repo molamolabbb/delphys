@@ -110,7 +110,7 @@ void doubleHiggsAnalyser::SetOutput(TString output_file_name) {
   n_events_tree = new TTree("nevents","nevents");
 }
 
-/*
+
 void doubleHiggsAnalyser::SetTMVA(TString weight_file_path) {
   bdtg_reader = new TMVA::Reader();
   bdtg_reader->AddVariable("ll_deltaR", &ll_deltaR);
@@ -129,7 +129,7 @@ void doubleHiggsAnalyser::SetTMVA(TString weight_file_path) {
   
   bdtg_reader->BookMVA("BDTG", weight_file_path);
 }
-*/
+
 void doubleHiggsAnalyser::SetBranchAddress() {
   del_tree->SetBranchAddress("Particle",&particles);
   del_tree->SetBranchAddress("Muon",&muons);
@@ -258,13 +258,11 @@ bool doubleHiggsAnalyser::Analysis(){
     if (abs(pid1)==doubleHiggsAnalyser::Electron_PID){
       auto lep1 = static_cast<const Electron *>(electrons->At(index_l1));
       lepton1.SetPtEtaPhiM(lep1->PT,lep1->Eta,lep1->Phi,doubleHiggsAnalyser::Electron_Mass);
-      cout << doubleHiggsAnalyser::Electron_Mass<<endl;
     }
       
     else if (abs(pid1)==doubleHiggsAnalyser::Muon_PID){
       auto lep1 = static_cast<const Muon *>(muons->At(index_l1));
       lepton1.SetPtEtaPhiM(lep1->PT,lep1->Eta,lep1->Phi,doubleHiggsAnalyser::Muon_Mass);
-      cout << doubleHiggsAnalyser::Muon_Mass<<endl;
     }
     /*
     else{
@@ -345,11 +343,11 @@ bool doubleHiggsAnalyser::Analysis(){
     mT = sqrt(2*leptonlepton.Pt()*missing.E()*(1-cos(leptonlepton.Phi()-missing.Phi())));
 
     // lepton baseline selections
-    if (ll_deltaR < 0.07 || ll_deltaR > 3.3) {return true;} step++; // pre-MVA selection 1
-    if (leptonlepton.M() < 5 || leptonlepton.M() > 100) {return true;} step++; // pre-MVA selection 2
+    if (ll_deltaR > 1.2 ) {return true;} step++; // pre-MVA selection 1
+    if (leptonlepton.M() > 100) {return true;} step++; // pre-MVA selection 2
     // bottom baseline selections
-    if (bb_deltaR > 5) {return true;} step++; // pre-MVA selection 3
-    if (bottombottom.M() < 22) {return true;} step++; // pre-MVA selection 4
+    if (bb_deltaR > 1.3) {return true;} step++; // pre-MVA selection 3
+    if (bottombottom.M() < 75 || bottombottom.M()>200) {return true;} step++; // pre-MVA selection 4
 
     
     // get TLorentzVector to the global variable for Minuit
@@ -399,7 +397,8 @@ bool doubleHiggsAnalyser::Analysis(){
     //          missing.M(),missing.M());
     basic_MT2_332_l = basic_mt2_332Calculator.mt2_332(vis_A_l, vis_B_l, pT_Miss_l, missing.M());
     ch_bisect_MT2_332_l = ch_bisect_mt2_332Calculator.mt2_332(vis_A_l, vis_B_l, pT_Miss_l, missing.M());
-    //tmva_bdtg_output = bdtg_reader->EvaluateMVA("BDTG");
+    tmva_bdtg_output = bdtg_reader->EvaluateMVA("BDTG");
+
     return true;
 }
 
@@ -437,11 +436,14 @@ int main(Int_t argc,Char_t** argv)
 {
   TChain *tree = new TChain("Delphes");
   TString filename(argv[1]);
+  //TString weight_file_path = "/cms/ldap_home/molamolabb/delPhys/src/delphys/analysis/test/hh/2-TMVA/dataset_pp_hh2_pp_tt_all2/weights/DoubleHiggs_BDTG.weights.xml";
+  TString weight_file_path(argv[3]);
   TString output_name(argv[2]);
   tree->Add(filename); 
   tree->SetBranchStatus("*",true);
   doubleHiggsAnalyser ana(tree,true);
   ana.Initiate(output_name);
+  ana.SetTMVA(weight_file_path);
   ana.Loop();
   ana.Finalize();
   return 0;
