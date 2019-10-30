@@ -2,10 +2,10 @@
 #define doubleHiggsAnalyser_H
 #include "delphys/external/interface/Basic_Mt2_332_Calculator.h"
 #include "delphys/external/interface/ChengHanBisect_Mt2_332_Calculator.h"
-//#include "TMVA/Tools.h"
-//#include "TMVA/Reader.h"
-//#include "TMVA/DataLoader.h"
-//#include "TMVA/MethodCuts.h"
+#include "TMVA/Tools.h"
+#include "TMVA/Reader.h"
+#include "TMVA/DataLoader.h"
+#include "TMVA/MethodCuts.h"
 #include "TMinuit.h"
 #include "TError.h"
 
@@ -65,7 +65,7 @@ private :
 
   ////TMVA variables
   //reader
-  //TMVA::Reader* bdtg_reader;
+  TMVA::Reader* bdtg_reader;
   Float_t tmva_bdtg_output = 0;
 
   // TLorentzVectors
@@ -105,12 +105,14 @@ public :
   static const int Electron_PID = 11;
   static const int Muon_PID = 13;
   static const int Tau_PID = 15;
-  static constexpr float Muon_Mass = 105.6583745; // MeV
-  static constexpr float Electron_Mass = 0.5109989461; // MeV
+  //static constexpr float Muon_Mass = 105.6583745; // MeV
+  //static constexpr float Electron_Mass = 0.5109989461; // MeV
+  static constexpr float Muon_Mass = 0.1056583745; // GeV
+  static constexpr float Electron_Mass = 0.0005109989461; // GeV
   // before loop settings
   void MakeOutputBranch(TTree *tree);
   void SetOutput(TString output_file_name);
-  //void SetTMVA(TString weight_file_path);
+  void SetTMVA(TString weight_file_path);
   void SetBranchAddress();
   void SetNanoBranchAddress();
   void SetDelphesBranchAddress();
